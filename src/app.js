@@ -3,5 +3,5 @@
 import Game from './app/Game'
 
 // Create a new game
-let BlockInvader = new Game();
+let BlockInvader = new Game(800, 500);
 

@@ -1,46 +1,70 @@
-import Grid from './Grid.js'
+// import Grid from './Grid'
+import CurrentPlayer from './CurrentPlayer';
 
 module.exports = class Game {
-    constructor() {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height
+
         // Create a new canvas element
         this.canvas = new fabric.Canvas('canvas', {
-            width: 500,
-            height: 500,
+            width: width,
+            height: height,
             selection: false,
-            hoverCursor: 'pointer',
+            hoverCursor: 'default',
+            scale: this.scale
         });
 
-        // Generate a grid
-        this.grid = new Grid(10, 10, this.canvas)
+        // Keystroke handler
+        document.onkeydown = this.checkKeyStroke;
 
-        // set the event listeners
-        this.setEventListeners();
+        // Resize screen handler
+        $(window).on('resize', this.screenResizeEvent);
+
+        // Generate a current player
+        this.currentPlayer = new CurrentPlayer(this.canvas);
+
+        // Initial screen size check
+        this.screenResizeEvent();
+
     }
 
-    setEventListeners = () => {
-        this.canvas.on('mouse:over', this.objectOnMouseOver);
-        this.canvas.on('mouse:out', this.objectOnMouseOut);
-    }
+    checkKeyStroke = (e) => {
+        e = e || window.event;
 
-    objectOnMouseOver = (e) => {
-        if (e.target) {
-            e.target.animate('angle', 5, {
-                duration: 500,
-                onChange: this.canvas.renderAll.bind(this.canvas),
-                easing: fabric.util.ease.easeOutBounce
-            });
-            this.canvas.renderAll();
+        if (e.keyCode === 38 || e.keyCode === 87) {
+            // up arrow or w
+            this.player.move('up');
+        } else if (e.keyCode === 40 || e.keyCode === 83) {
+            // down arrow or s
+            this.player.move('down');
+        } else if (e.keyCode === 37 || e.keyCode === 65) {
+            // left arrow or a
+            this.player.move('left');
+        } else if (e.keyCode === 39 || e.keyCode === 68) {
+            // right arrow or d
+            this.player.move('right');
+        }else{
+
         }
     }
 
-    objectOnMouseOut = (e) => {
-        if (e.target) {
-            e.target.animate('angle', 0, {
-                duration: 500,
-                onChange: this.canvas.renderAll.bind(this.canvas),
-                easing: fabric.util.ease.easeOutBounce
-            });
-            this.canvas.renderAll();
-        }
-    };
+    checkScaleAlt = (event) => {
+        let widthScale = this.width / window.innerWidth;
+        let heigthScale = this.height / window.innerHeight;
+        let usedScale = (heigthScale > widthScale) ? heigthScale : widthScale;
+
+        // change the canvas size
+        this.canvas.setHeight(this.height / usedScale)
+        this.canvas.setWidth(this.width / usedScale)
+    }
+
+    screenResizeEvent = () =>{
+        // change the canvas size
+        this.canvas.setHeight(window.innerHeight)
+        this.canvas.setWidth(window.innerWidth)
+
+        // center the player
+        this.currentPlayer.setCenter();
+    }
 }

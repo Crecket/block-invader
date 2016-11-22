@@ -1,7 +1,5 @@
 import GridSquare from './GridSquare.js';
 
-// http://fabricjs.com/docs/fabric.Object.html
-
 module.exports = class Grid {
     constructor(xBlocks, yBlocks, canvas) {
         this.xBlocks = xBlocks;
@@ -10,7 +8,7 @@ module.exports = class Grid {
 
         // some settings
         this.padding = 5;
-        this.blockPadding = 5;
+        this.blockPadding = 10;
 
         // contains all the squares as GridSquare object
         this.gridSquares = [];
