@@ -30,6 +30,7 @@
     "webpack": "^1.12.9"
   },
   "scripts": {
+    "start": "nodemon server.js",
     "dev": "webpack -d --watch --progress --colors",
     "release": "webpack --progress --colors"
   }
