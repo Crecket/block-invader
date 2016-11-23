@@ -12,12 +12,12 @@ var io = SocketIO(httpServer);
 // publc files
 app.use(express.static('public'))
 
+// Vendor files
 app.get('/fabric.js', (req, res) => {
     res.sendFile(__dirname + '/node_modules/fabric/dist/fabric.js');
 });
-
-app.get('/node', (req, res) => {
-    res.sendFile(__dirname + '/node_modules/fabric/dist/fabric.js');
+app.get('/jquery.js', (req, res) => {
+    res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.js');
 });
 
 httpServer.listen(3000, function () {
@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
         SendPlayers();
     });
 
-    socket.on('disconnect', () =>{
+    socket.on('disconnect', () => {
         var randId = playerIndex[socket_id].randId;
 
         // destroy the inf  idels

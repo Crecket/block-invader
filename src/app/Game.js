@@ -131,7 +131,7 @@ module.exports = class Game {
             // remove this client from the list by client_id
             if (key === this.client_id) {
                 delete this.players[key];
-            }+
+            }
 
         })
         console.log(this.players);
