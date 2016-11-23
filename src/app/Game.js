@@ -229,8 +229,14 @@ module.exports = class Game {
      */
     _SocketDisconnect = () => {
         // Reset lists
+        Object.keys(this.players).map((key) => {
+            // Check if player has a active object
+            if (this.players[key].object) {
+                // remove the object
+                this.players[key].object.remove();
+            }
+        });
         this.players = {};
-        this.objects = {};
     }
 
     /**

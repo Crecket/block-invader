@@ -1,7 +1,4 @@
-const playerWidth = 24;
-const playerHeight = 32;
-
-module.exports = class Player {
+module.exports = class Bullet {
     constructor(startX, startY, startAngle, canvas) {
         // Store parameters
         this.x = startX;
@@ -10,8 +7,8 @@ module.exports = class Player {
         this.canvas = canvas;
 
         // store the width and height
-        this.width = playerWidth;
-        this.height = playerHeight;
+        this.width = 2;
+        this.height = 2;
 
         // Extra propertiees
         this.properties = {
@@ -19,7 +16,7 @@ module.exports = class Player {
         };
 
         // Generate the player object
-        this.generatePlayer()
+        this.generate()
     }
 
     /**
@@ -27,7 +24,7 @@ module.exports = class Player {
      */
     update = () => {
         // Update the canvas object
-        this.player.set({
+        this.bullet.set({
             'left': this.x,
             'top': this.y,
             'width': this.width,
@@ -37,7 +34,7 @@ module.exports = class Player {
         });
 
         // Update the canvas
-        this.player.setCoords();
+        this.bullet.setCoords();
         this.canvas.renderAll();
     }
 
@@ -70,15 +67,14 @@ module.exports = class Player {
      * Remove this player from the canvas
      */
     remove = () => {
-        this.player.remove();
+        this.bullet.remove();
     }
 
     /**
      * Generate the initial player object on the canvas
      */
-    generatePlayer = () => {
-        this.player = new fabric.Path('M ' + (playerWidth / 2) + ' 0 ' + 'L ' + playerWidth + ' ' + playerHeight + ' ' + 'L ' + playerWidth / 2 + ' ' + (playerHeight * 0.8) + ' ' + 'L 0 ' + playerHeight + ' z');
-        this.player.set({
+    generate = () => {
+        this.bullet = new fabric.Rect({
             left: this.x,
             top: this.y,
             width: this.width,
@@ -95,6 +91,6 @@ module.exports = class Player {
             selectable: false,
             hoverCursor: 'default',
         });
-        this.canvas.add(this.player);
+        this.canvas.add(this.bullet);
     }
 }
