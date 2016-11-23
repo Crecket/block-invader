@@ -6,6 +6,18 @@ module.exports = class Game {
         this.width = width;
         this.height = height
 
+        // this client's id
+        this.client_id = false;
+
+        // Connect to socket
+        this.socket = io();
+
+        // Player list
+        this.players = {};
+
+        // Set the socket handlers
+        this.setSocketHandlers();
+
         // Create a new canvas element
         this.canvas = new fabric.Canvas('canvas', {
             width: width,
@@ -15,6 +27,8 @@ module.exports = class Game {
             scale: this.scale
         });
 
+        this.players = {};
+
         // Keystroke handler
         document.onkeydown = this.handleKeyDown;
         document.onkeyup = this.handleKeyUp;
@@ -23,7 +37,7 @@ module.exports = class Game {
         $(window).on('resize', this.screenResizeEvent);
 
         // Generate a current player object
-        this.currentPlayer = new CurrentPlayer(this.canvas);
+        this.currentPlayer = new CurrentPlayer(this.canvas, this.socket);
 
         // Initial screen size check
         this.screenResizeEvent();
@@ -82,17 +96,25 @@ module.exports = class Game {
         }
     }
 
+    /**
+     * handle the window resize event
+     */
     screenResizeEvent = () => {
         // change the canvas size
         this.canvas.setHeight(window.innerHeight)
         this.canvas.setWidth(window.innerWidth)
     }
 
-
+    /**
+     * Handle delta calculations
+     *
+     * @param fps
+     * @param cb
+     */
     deltaEvent = (fps, cb) => {
         let lastUpdate = Date.now();
         let timeoutDuration = 1000 / fps;
-        let myInterval = setInterval(tick, timeoutDuration);
+        setInterval(tick, timeoutDuration);
 
         function tick() {
             var now = Date.now();
@@ -101,5 +123,26 @@ module.exports = class Game {
 
             cb(dt);
         }
+    }
+
+    _SocketPlayers = (players) => {
+        this.players = players;
+        Object.keys(this.players).map((key)=> {
+            // remove this client from the list by client_id
+            if (key === this.client_id) {
+                delete this.players[key];
+            }+
+
+        })
+        console.log(this.players);
+    }
+
+    _SocketUpdateId = (id) => {
+        this.client_id = id;
+    }
+
+    setSocketHandlers = () => {
+        this.socket.on('update id', this._SocketUpdateId);
+        this.socket.on('players', this._SocketPlayers);
     }
 }
