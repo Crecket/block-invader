@@ -1,15 +1,24 @@
+const playerWidth = 24;
+const playerHeight = 32;
+
 module.exports = class Player {
-    constructor(startX, startY, canvas) {
+    constructor(startX, startY, startAngle, canvas) {
+        // Store parameters
         this.x = startX;
         this.y = startY;
+        this.angle = startAngle;
         this.canvas = canvas;
-        this.width = 32;
-        this.radius = this.width / 2;
 
+        // store the width and height
+        this.width = playerWidth;
+        this.height = playerHeight;
+
+        // Extra propertiees
         this.properties = {
-            color: 'grey'
+            color: '#123456'
         };
 
+        // Generate the player object
         this.generatePlayer()
     }
 
@@ -17,23 +26,31 @@ module.exports = class Player {
      * Update any changed values for this player object on the canvas
      */
     update = () => {
+        // Update the canvas object
         this.player.set({
-            left: this.x,
-            top: this.y,
-            radius: this.radius,
-            fill: this.properties.color
-        })
+            'left': this.x,
+            'top': this.y,
+            'width': this.width,
+            'angle': this.angle,
+            'fill': this.properties.color
+        });
+
+        // Update the canvas
+        this.player.setCoords();
+        this.canvas.renderAll();
     }
 
     /**
-     * Sets the player position to a new value
+     * Sets the player position and angle to a new value
      *
      * @param x
      * @param y
+     * @param angle
      */
-    setPosition = (x, y) => {
+    setPosition = (x, y, angle) => {
         this.x = x;
         this.y = y;
+        this.angle = angle % 360; // Prevent angles of > 360. So 440 becomes 80
         this.update();
     }
 
@@ -43,7 +60,7 @@ module.exports = class Player {
      * @param key
      * @param value
      */
-    setValue = (key, value) => {
+    setPropertyValue = (key, value) => {
         this.properties[key] = value;
         this.update();
     }
@@ -52,12 +69,15 @@ module.exports = class Player {
      * Generate the initial player object on the canvas
      */
     generatePlayer = () => {
-        this.player = new fabric.Circle({
+        this.player = new fabric.Triangle({
             left: this.x,
             top: this.y,
+            width: this.width,
+            height: this.height,
             fill: this.properties.color,
 
-            radius: this.radius,
+            originX: 'center',
+            originY: 'center',
             hasControls: false,
             hasBorders: false,
             hasRotatingPoint: false,
