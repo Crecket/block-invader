@@ -1,19 +1,27 @@
 // import Grid from './Grid'
 import CurrentPlayer from './CurrentPlayer';
+import Player from './Player';
 
 module.exports = class Game {
+
+    // Player list
+    players = {};
+
+    // All objects. Things like bullets and random objects
+    objects = {};
+
+    // this client's id
+    client_id = false;
+
+    // the canvas element
+    canvas;
+
     constructor(width, height) {
         this.width = width;
         this.height = height
 
-        // this client's id
-        this.client_id = false;
-
         // Connect to socket
         this.socket = io();
-
-        // Player list
-        this.players = {};
 
         // Set the socket handlers
         this.setSocketHandlers();
@@ -26,8 +34,6 @@ module.exports = class Game {
             hoverCursor: 'default',
             scale: this.scale
         });
-
-        this.players = {};
 
         // Keystroke handler
         document.onkeydown = this.handleKeyDown;
@@ -46,6 +52,9 @@ module.exports = class Game {
         this.deltaEvent(60, (delta) => {
             // Update the player
             this.currentPlayer.update(delta)
+
+            // Render all other players/object
+            this.render();
         });
 
     }
@@ -72,7 +81,6 @@ module.exports = class Game {
                 break;
         }
     }
-
     handleKeyUp = (e) => {
         e = e || window.event;
 
@@ -96,8 +104,29 @@ module.exports = class Game {
         }
     }
 
+
+    render = () => {
+        Object.keys(this.players).map((key) => {
+            let tempPlayer = this.players[key];
+
+            // Check if player is already rendered/has a player object
+            if (!tempPlayer.object) {
+                // Create new object at the correct location
+                tempPlayer.object = new Player(tempPlayer.x, tempPlayer.y, tempPlayer.angle, this.canvas);
+            } else {
+                // update the new coordinates
+                tempPlayer.object.setPosition(tempPlayer.x, tempPlayer.y, tempPlayer.angle);
+            }
+        });
+
+        Object.keys(this.objects).map((key) => {
+            let tempObject = this.objects[key];
+
+        });
+    }
+
     /**
-     * handle the window resize event
+     * Handle the window resize event
      */
     screenResizeEvent = () => {
         // change the canvas size
@@ -125,24 +154,74 @@ module.exports = class Game {
         }
     }
 
-    _SocketPlayers = (players) => {
-        this.players = players;
-        Object.keys(this.players).map((key)=> {
+    /**
+     * Receive a list of all active players including the current client
+     *
+     * @param newPlayers
+     * @private
+     */
+    _SocketPlayers = (newPlayers) => {
+        Object.keys(newPlayers).map((key) => {
             // remove this client from the list by client_id
             if (key === this.client_id) {
-                delete this.players[key];
+                delete newPlayers[key];
+            } else {
+                if (!this.players[key]) {
+                    // Add a new player
+                    this.players[key] = {
+                        x: newPlayers[key].x,
+                        y: newPlayers[key].y,
+                        angle: newPlayers[key].angle,
+                        object: false
+                    }
+                } else {
+                    // Update existing player
+                    this.players[key].x = newPlayers[key].x;
+                    this.players[key].y = newPlayers[key].y;
+                    this.players[key].angle = newPlayers[key].angle;
+                }
+            }
+        })
+    }
+
+    /**
+     * Receive a ID that the server has assigned to us
+     * @param id
+     * @private
+     */
+    _SocketUpdateId = (id) => {
+        // We received a new ID
+        this.client_id = id;
+
+        // Send our location
+        this.currentPlayer.emitLocation();
+    }
+
+    /**
+     * Remove a player by ID
+     *
+     * @param playerId
+     * @private
+     */
+    _SocketPlayerLeave = (playerId) => {
+        if (this.players[playerId]) {
+            // Check if player has a active object
+            if (this.players[playerId].object) {
+                // remove the object
+                this.players[playerId].object.remove();
             }
 
-        })
-        console.log(this.players);
+            // Remove the player all together
+            delete this.players[playerId];
+        }
     }
 
-    _SocketUpdateId = (id) => {
-        this.client_id = id;
-    }
-
+    /**
+     * Set all socket handlers for the Game class
+     */
     setSocketHandlers = () => {
         this.socket.on('update id', this._SocketUpdateId);
         this.socket.on('players', this._SocketPlayers);
+        this.socket.on('player leave', this._SocketPlayerLeave);
     }
 }

@@ -8,7 +8,7 @@ var SRC_DIR = path.resolve(__dirname, 'src/');
 
 var config = {
     entry: [
-        SRC_DIR + '/app.js'
+        SRC_DIR + '/app/app.js'
     ],
     output: {
         path: BUILD_DIR,

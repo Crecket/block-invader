@@ -23,14 +23,26 @@ module.exports = class CurrentPlayer {
         this.setCenter();
     }
 
+    /**
+     * Start moving in a direction
+     * @param direction
+     */
     startMove = (direction) => {
         this.movement[direction] = true;
     }
 
+    /**
+     * Stop moving in a direction
+     * @param direction
+     */
     stopMove = (direction) => {
         this.movement[direction] = false;
     }
 
+    /**
+     * Update this player on the canvas
+     * @param delta
+     */
     update = (delta) => {
         let tempMoveSpeed = moveSpeed / delta;
         let tempTurnSpeed = turnSpeed / delta;

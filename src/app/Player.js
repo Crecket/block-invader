@@ -66,6 +66,13 @@ module.exports = class Player {
     }
 
     /**
+     * Remove this player from the canvas
+     */
+    remove = () => {
+        this.player.remove();
+    }
+
+    /**
      * Generate the initial player object on the canvas
      */
     generatePlayer = () => {

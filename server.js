@@ -1,13 +1,15 @@
 "use strict";
 
+// Libraries
 const express = require('express');
 const http = require('http');
-const SocketIO = require('socket.io');
-const uuid = require('uuid');
 
+// Create apps and connections
 var app = express();
 var httpServer = http.Server(app);
-var io = SocketIO(httpServer);
+
+// Socket io handlers
+var io = require('./src/server/socket')(httpServer);
 
 // publc files
 app.use(express.static('public'))
@@ -23,54 +25,3 @@ app.get('/jquery.js', (req, res) => {
 httpServer.listen(3000, function () {
     console.log('listening on *:3000');
 });
-
-var players = {};
-var playerIndex = {};
-
-io.on('connection', (socket) => {
-    var socket_id = socket.id;
-    var rand_id = uuid();
-
-    // Create a new random player
-    playerIndex[socket_id] = {
-        socketId: socket_id,
-        randId: rand_id
-    }
-    players[rand_id] = {};
-
-    // Tell the client its new id
-    socket.emit('update id', rand_id);
-
-    // Send initial player list
-    SendPlayers();
-
-    socket.on('update player', (playerInfo) => {
-        var randId = playerIndex[socket_id].randId;
-
-        // store data
-        players[randId] = playerInfo;
-
-        // update player
-        SendPlayers();
-    });
-
-    socket.on('disconnect', () => {
-        var randId = playerIndex[socket_id].randId;
-
-        // destroy the inf  idels
-        delete players[randId];
-        delete playerIndex[socket_id];
-    })
-});
-
-let InsertPlayer = (socketId) => {
-
-}
-
-let SendPlayers = () => {
-    io.emit('players', players);
-}
-
-function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
