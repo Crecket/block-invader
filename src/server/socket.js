@@ -1,3 +1,4 @@
+"use strict";
 const SocketIO = require('socket.io');
 const uuid = require('uuid');
 

@@ -15,7 +15,7 @@ module.exports = class Player {
 
         // Extra propertiees
         this.properties = {
-            color: '#123456'
+            color: '#222',
         };
 
         // Generate the player object
@@ -76,7 +76,8 @@ module.exports = class Player {
      * Generate the initial player object on the canvas
      */
     generatePlayer = () => {
-        this.player = new fabric.Triangle({
+        this.player = new fabric.Path('M ' + (playerWidth / 2) + ' 0 ' + 'L ' + playerWidth + ' ' + playerHeight + ' ' + 'L ' + playerWidth / 2 + ' ' + (playerHeight * 0.8) + ' ' + 'L 0 ' + playerHeight + ' z');
+        this.player.set({
             left: this.x,
             top: this.y,
             width: this.width,

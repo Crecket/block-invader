@@ -18,9 +18,6 @@ module.exports = class CurrentPlayer {
 
         // generate a new player object
         this.player = new Player(50, 50, 0, this.canvas)
-
-        // initially center player
-        this.setCenter();
     }
 
     /**
@@ -85,19 +82,15 @@ module.exports = class CurrentPlayer {
             // check out of bounds
             if (tempNewX < 0 - this.player.width / 2) {
                 tempNewX = this.canvas.width - this.player.width / 2;
-                // tempNewY = this.swapY(tempNewY);
             }
             if (tempNewX > this.canvas.width - this.player.width / 2) {
                 tempNewX = 0 - this.player.width / 2
-                // tempNewY = this.swapY(tempNewY);
             }
             if (tempNewY < 0 - this.player.height / 2) {
                 tempNewY = this.canvas.height - this.player.height / 2;
-                // tempNewX = this.swapX(tempNewX);
             }
             if (tempNewY > this.canvas.height - this.player.height / 2) {
                 tempNewY = 0 - this.player.height / 2
-                // tempNewX = this.swapX(tempNewX);
             }
 
             // update the player
@@ -112,28 +105,15 @@ module.exports = class CurrentPlayer {
         }
     }
 
+    /**
+     * Send the current location to the server
+     */
     emitLocation = () => {
         this.socket.emit('update player', {
             x: this.player.x,
             y: this.player.y,
             angle: this.player.angle,
         });
-    }
-
-    swapY = (newY) => {
-        return this.canvas.height - newY;
-    }
-
-    swapX = (newX) => {
-        return this.canvas.width - newX;
-    }
-
-    setCenter = () => {
-        this.player.setPosition(
-            (this.canvas.width / 2) - this.player.width / 2,
-            (this.canvas.height / 2) - this.player.width / 2,
-            0
-        )
     }
 
 }

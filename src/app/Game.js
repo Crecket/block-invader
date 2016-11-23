@@ -34,7 +34,6 @@ module.exports = class Game {
             hoverCursor: 'default',
             scale: this.scale
         });
-
         // Keystroke handler
         document.onkeydown = this.handleKeyDown;
         document.onkeyup = this.handleKeyUp;
@@ -59,6 +58,11 @@ module.exports = class Game {
 
     }
 
+    /**
+     * Handle keystroke events
+     *
+     * @param e
+     */
     handleKeyDown = (e) => {
         e = e || window.event;
 
@@ -104,7 +108,9 @@ module.exports = class Game {
         }
     }
 
-
+    /**
+     * Render the players and other objects
+     */
     render = () => {
         Object.keys(this.players).map((key) => {
             let tempPlayer = this.players[key];
@@ -217,9 +223,21 @@ module.exports = class Game {
     }
 
     /**
+     * Socket disconnect event
+     *
+     * @private
+     */
+    _SocketDisconnect = () => {
+        // Reset lists
+        this.players = {};
+        this.objects = {};
+    }
+
+    /**
      * Set all socket handlers for the Game class
      */
     setSocketHandlers = () => {
+        this.socket.on('disconnect', this._SocketDisconnect);
         this.socket.on('update id', this._SocketUpdateId);
         this.socket.on('players', this._SocketPlayers);
         this.socket.on('player leave', this._SocketPlayerLeave);
