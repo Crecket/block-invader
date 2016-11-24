@@ -31,9 +31,26 @@ module.exports = (httpServer) => {
         // Receive new player info from client
         socket.on('update player', (playerInfo) => {
             var randId = playerIndex[socket_id].randId;
+            if (players[randId]) {
+                // Player exists, just update new values
+                Object.assign(players[randId], playerInfo);
+            } else {
+                // Create new player
+                players[randId] = playerInfo;
+            }
+        });
 
-            // store data
-            players[randId] = playerInfo;
+        // Receive new player info from client
+        socket.on('fire', (playerInfo) => {
+            var randId = playerIndex[socket_id].randId;
+            if (players[randId]) {
+                // Player exists, just update new values
+                Object.assign(players[randId], playerInfo);
+            } else {
+                // Create new player
+                players[randId] = playerInfo;
+            }
+            console.log('fire');
         });
 
         // Client disconnected

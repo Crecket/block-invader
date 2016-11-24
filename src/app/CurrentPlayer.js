@@ -106,6 +106,18 @@ module.exports = class CurrentPlayer {
     }
 
     /**
+     * Tell the server we want to fire
+     */
+    fire = () => {
+        // send a fire event with our latest info
+        this.socket.emit('fire', {
+            x: this.player.x,
+            y: this.player.y,
+            angle: this.player.angle,
+        })
+    }
+
+    /**
      * Send the current location to the server
      */
     emitLocation = () => {

@@ -162,7 +162,6 @@ module.exports = class Game {
 
     /**
      * Receive a list of all active players including the current client
-     *
      * @param newPlayers
      * @private
      */
@@ -205,7 +204,6 @@ module.exports = class Game {
 
     /**
      * Remove a player by ID
-     *
      * @param playerId
      * @private
      */
@@ -224,7 +222,6 @@ module.exports = class Game {
 
     /**
      * Socket disconnect event
-     *
      * @private
      */
     _SocketDisconnect = () => {
@@ -240,9 +237,19 @@ module.exports = class Game {
     }
 
     /**
+     * Socket disconnect event
+     * @private
+     */
+    _SocketFire = () => {
+        // Reset lists
+        console.log('fire');
+    }
+
+    /**
      * Set all socket handlers for the Game class
      */
     setSocketHandlers = () => {
+        this.socket.on('fire', this._SocketFire);
         this.socket.on('disconnect', this._SocketDisconnect);
         this.socket.on('update id', this._SocketUpdateId);
         this.socket.on('players', this._SocketPlayers);
