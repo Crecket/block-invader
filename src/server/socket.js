@@ -4,12 +4,23 @@ const uuid = require('uuid');
 
 var players = {};
 var playerIndex = {};
+var objects = {};
 
 module.exports = (httpServer) => {
     var io = SocketIO(httpServer);
 
+    // Emit general server info
+    let SendInfo = () => {
+        SendPlayers();
+        SendObjects();
+    }
+
     let SendPlayers = () => {
         io.emit('players', players);
+    }
+
+    let SendObjects = () => {
+        io.emit('objects', objects);
     }
 
     io.on('connection', (socket) => {
@@ -42,9 +53,13 @@ module.exports = (httpServer) => {
 
         // Receive new player info from client
         socket.on('fire', (bulletInfo) => {
-            var randId = playerIndex[socket_id].randId;
-            console.log(bulletInfo);
-            socket.emit('fire', bulletInfo);
+            // add new bullet
+            objects[uuid()] = {
+                type: 'bullet',
+                x: bulletInfo.x,
+                y: bulletInfo.y,
+                angle: bulletInfo.angle,
+            }
         });
 
         // Client disconnected
@@ -63,7 +78,7 @@ module.exports = (httpServer) => {
     // Update clients every frame ~16 ms
     setInterval(() => {
         if (Object.keys(players).length > 0) {
-            SendPlayers();
+            SendInfo();
         }
     }, 1000 / 60)
 
