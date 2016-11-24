@@ -41,16 +41,10 @@ module.exports = (httpServer) => {
         });
 
         // Receive new player info from client
-        socket.on('fire', (playerInfo) => {
+        socket.on('fire', (bulletInfo) => {
             var randId = playerIndex[socket_id].randId;
-            if (players[randId]) {
-                // Player exists, just update new values
-                Object.assign(players[randId], playerInfo);
-            } else {
-                // Create new player
-                players[randId] = playerInfo;
-            }
-            console.log('fire');
+            console.log(bulletInfo);
+            socket.emit('fire', bulletInfo);
         });
 
         // Client disconnected

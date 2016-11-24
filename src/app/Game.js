@@ -1,6 +1,6 @@
-// import Grid from './Grid'
 import CurrentPlayer from './CurrentPlayer';
 import Player from './Player';
+import Bullet from './Bullet';
 
 module.exports = class Game {
 
@@ -8,7 +8,7 @@ module.exports = class Game {
     players = {};
 
     // All objects. Things like bullets and random objects
-    objects = {};
+    objects = [];
 
     // this client's id
     client_id = false;
@@ -83,6 +83,10 @@ module.exports = class Game {
             case 68:
                 this.currentPlayer.startMove('right');
                 break;
+            case 32: // space
+            case 74: // j
+                this.currentPlayer.fire();
+                break;
         }
     }
     handleKeyUp = (e) => {
@@ -105,6 +109,10 @@ module.exports = class Game {
             case 68:
                 this.currentPlayer.stopMove('right');
                 break;
+            // case 32: // space
+            // case 74: // j
+            //     this.currentPlayer.fire();
+            //     break;
         }
     }
 
@@ -123,11 +131,6 @@ module.exports = class Game {
                 // update the new coordinates
                 tempPlayer.object.setPosition(tempPlayer.x, tempPlayer.y, tempPlayer.angle);
             }
-        });
-
-        Object.keys(this.objects).map((key) => {
-            let tempObject = this.objects[key];
-
         });
     }
 
@@ -190,6 +193,35 @@ module.exports = class Game {
     }
 
     /**
+     * Receive a list of all active objects including the current client
+     * @param newPlayers
+     * @private
+     */
+    _SocketObjects = (newObjects) => {
+        newObjects.map((value, key) => {
+            // remove this client from the list by client_id
+            if (key === this.client_id) {
+                delete newObjects[key];
+            } else {
+                if (!this.objects[key]) {
+                    // Add a new player
+                    this.objects[key] = {
+                        x: newObjects[key].x,
+                        y: newObjects[key].y,
+                        angle: newObjects[key].angle,
+                        object: false
+                    }
+                } else {
+                    // Update existing player
+                    this.objects[key].x = newPlayers[key].x;
+                    this.objects[key].y = newPlayers[key].y;
+                    this.objects[key].angle = newPlayers[key].angle;
+                }
+            }
+        })
+    }
+
+    /**
      * Receive a ID that the server has assigned to us
      * @param id
      * @private
@@ -237,12 +269,14 @@ module.exports = class Game {
     }
 
     /**
-     * Socket disconnect event
+     * Socket fire event
+     * @param bulletInfo
      * @private
      */
-    _SocketFire = () => {
+    _SocketFire = (bulletInfo) => {
         // Reset lists
-        console.log('fire');
+        console.log('fire', bulletInfo);
+        var test = new Bullet(bulletInfo.x, bulletInfo.y, bulletInfo.angle, this.canvas);
     }
 
     /**

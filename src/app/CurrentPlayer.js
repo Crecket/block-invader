@@ -110,11 +110,7 @@ module.exports = class CurrentPlayer {
      */
     fire = () => {
         // send a fire event with our latest info
-        this.socket.emit('fire', {
-            x: this.player.x,
-            y: this.player.y,
-            angle: this.player.angle,
-        })
+        this.socket.emit('fire');
     }
 
     /**

@@ -57,7 +57,6 @@ module.exports = class Player {
 
     /**
      * Sets a property value
-     *
      * @param key
      * @param value
      */
