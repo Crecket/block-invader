@@ -7,8 +7,8 @@ module.exports = class Game {
     // Player list
     players = {};
 
-    // All objects. Things like bullets and random objects
-    objects = [];
+    // All bullets. Things like bullets and random bullets
+    bullets = [];
 
     // this client's id
     client_id = false;
@@ -117,7 +117,7 @@ module.exports = class Game {
     }
 
     /**
-     * Render the players and other objects
+     * Render the players and other bullets
      */
     render = () => {
         Object.keys(this.players).map((key) => {
@@ -193,30 +193,25 @@ module.exports = class Game {
     }
 
     /**
-     * Receive a list of all active objects including the current client
+     * Receive a list of all active bullets including the current client
      * @param newPlayers
      * @private
      */
-    _SocketObjects = (newObjects) => {
-        newObjects.map((value, key) => {
-            // remove this client from the list by client_id
-            if (key === this.client_id) {
-                delete newObjects[key];
-            } else {
-                if (!this.objects[key]) {
-                    // Add a new player
-                    this.objects[key] = {
-                        x: newObjects[key].x,
-                        y: newObjects[key].y,
-                        angle: newObjects[key].angle,
-                        object: false
-                    }
-                } else {
-                    // Update existing player
-                    this.objects[key].x = newPlayers[key].x;
-                    this.objects[key].y = newPlayers[key].y;
-                    this.objects[key].angle = newPlayers[key].angle;
+    _SocketBullets = (newBullets) => {
+        Object.keys(newBullets).map((key) => {
+            if (!this.bullets[key]) {
+                // Add a new player
+                this.bullets[key] = {
+                    x: newBullets[key].x,
+                    y: newBullets[key].y,
+                    angle: newBullets[key].angle,
+                    object: false
                 }
+            } else {
+                // Update existing player
+                this.bullets[key].x = newBullets[key].x;
+                this.bullets[key].y = newBullets[key].y;
+                this.bullets[key].angle = newBullets[key].angle;
             }
         })
     }
@@ -269,24 +264,13 @@ module.exports = class Game {
     }
 
     /**
-     * Socket fire event
-     * @param bulletInfo
-     * @private
-     */
-    _SocketFire = (bulletInfo) => {
-        // Reset lists
-        console.log('fire', bulletInfo);
-        var test = new Bullet(bulletInfo.x, bulletInfo.y, bulletInfo.angle, this.canvas);
-    }
-
-    /**
      * Set all socket handlers for the Game class
      */
     setSocketHandlers = () => {
-        this.socket.on('fire', this._SocketFire);
         this.socket.on('disconnect', this._SocketDisconnect);
         this.socket.on('update id', this._SocketUpdateId);
         this.socket.on('players', this._SocketPlayers);
+        this.socket.on('bullets', this._SocketBullets);
         this.socket.on('player leave', this._SocketPlayerLeave);
     }
 }

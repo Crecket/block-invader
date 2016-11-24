@@ -4,7 +4,7 @@ const uuid = require('uuid');
 
 var players = {};
 var playerIndex = {};
-var objects = {};
+var bullets = {};
 
 module.exports = (httpServer) => {
     var io = SocketIO(httpServer);
@@ -20,16 +20,16 @@ module.exports = (httpServer) => {
     }
 
     let SendObjects = () => {
-        io.emit('objects', objects);
+        io.emit('bullets', bullets);
     }
 
     io.on('connection', (socket) => {
-        var socket_id = socket.id;
+        var socketId = socket.id;
         var randId = uuid();
 
         // Create a new random player
-        playerIndex[socket_id] = {
-            socketId: socket_id,
+        playerIndex[socketId] = {
+            socketId: socketId,
             randId: randId
         }
 
@@ -41,7 +41,6 @@ module.exports = (httpServer) => {
 
         // Receive new player info from client
         socket.on('update player', (playerInfo) => {
-            var randId = playerIndex[socket_id].randId;
             if (players[randId]) {
                 // Player exists, just update new values
                 Object.assign(players[randId], playerInfo);
@@ -52,23 +51,21 @@ module.exports = (httpServer) => {
         });
 
         // Receive new player info from client
-        socket.on('fire', (bulletInfo) => {
+        socket.on('fire', () => {
             // add new bullet
-            objects[uuid()] = {
+            bullets[uuid()] = {
                 type: 'bullet',
-                x: bulletInfo.x,
-                y: bulletInfo.y,
-                angle: bulletInfo.angle,
+                x: players[randId].x,
+                y: players[randId].y,
+                angle: players[randId].angle,
             }
         });
 
         // Client disconnected
         socket.on('disconnect', () => {
-            var randId = playerIndex[socket_id].randId;
-
             // destroy the inf  idels
             delete players[randId];
-            delete playerIndex[socket_id];
+            delete playerIndex[socketId];
 
             // Make sure other clients realize the player is gone
             io.emit('player leave', randId);
