@@ -6,3 +6,4 @@ console.info("App is using ", PRODUCTION_MODE ? "Production Mode" : "Development
 
 // Create a new game
 let BlockInvader = new Game(800, 500);
+

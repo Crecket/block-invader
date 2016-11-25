@@ -4,9 +4,15 @@ const moveSpeed = 80;
 const turnSpeed = 45;
 
 module.exports = class CurrentPlayer {
-    constructor(canvas, socket) {
+    constructor(canvas, socket, viewport) {
         this.canvas = canvas;
         this.socket = socket;
+        this.viewport = viewport;
+
+        // Virtual position
+        this.x = 0;
+        this.y = 0;
+        this.angle = 0;
 
         // store the current movement directions
         this.movement = {
@@ -18,10 +24,11 @@ module.exports = class CurrentPlayer {
         }
 
         // generate a new player object
-        this.player = new Player(50, 50, 0, this.canvas)
+        this.player = new Player(this.x, this.y, this.angle, this.canvas)
         this.player.setPropertyValue('color', '#' + '0123456789abcdef'.split('').map(function (v, i, a) {
                 return i > 5 ? null : a[Math.floor(Math.random() * 16)]
             }).join(''))
+        this.update(16);
     }
 
     /**
@@ -52,8 +59,8 @@ module.exports = class CurrentPlayer {
         let angleChange = 0;
 
         if (this.movement.sprint) {
-            tempMoveSpeed = tempMoveSpeed * 2;
-            tempTurnSpeed = tempTurnSpeed * 2;
+            tempMoveSpeed = tempMoveSpeed * 1.5;
+            tempTurnSpeed = tempTurnSpeed * 1.5;
         }
 
         // Go through all active movements
@@ -73,11 +80,11 @@ module.exports = class CurrentPlayer {
         // Check if we require to update player position
         if (xChange !== 0 || yChange !== 0 || angleChange !== 0) {
             // calculate the new angle
-            let tempNewAngle = this.player.angle + angleChange;
+            let tempNewAngle = this.angle + angleChange;
 
             // store a temp value for the current x/y
-            let tempNewX = this.player.x;
-            let tempNewY = this.player.y;
+            let tempNewX = this.x;
+            let tempNewY = this.y;
 
             // Calculate x/y based on angle
             if (yChange > 0) {
@@ -89,25 +96,37 @@ module.exports = class CurrentPlayer {
             }
 
             // check out of bounds
-            if (tempNewX < 0 - this.player.width / 2) {
-                tempNewX = this.canvas.width - this.player.width / 2;
+            if (tempNewX < 0) {
+                tempNewX = 0;
             }
-            if (tempNewX > this.canvas.width - this.player.width / 2) {
-                tempNewX = 0 - this.player.width / 2
+            if (tempNewX > this.viewport.width - this.player.width) {
+                tempNewX = this.viewport.width - this.player.width;
             }
-            if (tempNewY < 0 - this.player.height / 2) {
-                tempNewY = this.canvas.height - this.player.height / 2;
+            if (tempNewY < 0) {
+                tempNewY = 0;
             }
-            if (tempNewY > this.canvas.height - this.player.height / 2) {
-                tempNewY = 0 - this.player.height / 2
+            if (tempNewY > this.viewport.height - this.player.height) {
+                tempNewY = this.viewport.height - this.player.height;
             }
 
-            // update the player
+            // Update values
+            this.x = tempNewX;
+            this.y = tempNewY;
+            this.angle = tempNewAngle;
+
+            // update the player and set it in the center
             this.player.setPosition(
-                tempNewX,
-                tempNewY,
-                tempNewAngle
+                this.canvas.width / 2 - this.player.width / 2,
+                this.canvas.height / 2 - this.player.height / 2,
+                this.angle
             );
+
+            // modify the player coords to update the viewport
+            this.viewport.setPosition(
+                this.x,
+                this.y,
+                this.angle
+            )
 
             // Send new location to server
             this.emitInfo();
@@ -118,8 +137,8 @@ module.exports = class CurrentPlayer {
      * Tell the server we want to fire
      */
     fire = () => {
-        // send a fire event with our latest info
-        // this.socket.emit('fire');
+        return;
+        this.socket.emit('fire');
     }
 
     /**
@@ -127,9 +146,9 @@ module.exports = class CurrentPlayer {
      */
     emitInfo = () => {
         this.socket.emit('update player', {
-            x: this.player.x,
-            y: this.player.y,
-            angle: this.player.angle,
+            x: this.x,
+            y: this.y,
+            angle: this.angle,
             color: this.player.properties.color,
         });
     }

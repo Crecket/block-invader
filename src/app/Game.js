@@ -1,6 +1,7 @@
 import CurrentPlayer from './CurrentPlayer';
 import Player from './Player';
 import Bullet from './Bullet';
+import Viewport from './Viewport'
 
 module.exports = class Game {
 
@@ -41,8 +42,11 @@ module.exports = class Game {
         // Resize screen handler
         $(window).on('resize', this.screenResizeEvent);
 
+        // Generate the viewport handler
+        this.viewport = new Viewport(this.canvas);
+
         // Generate a current player object
-        this.currentPlayer = new CurrentPlayer(this.canvas, this.socket);
+        this.currentPlayer = new CurrentPlayer(this.canvas, this.socket, this.viewport);
 
         // Initial screen size check
         this.screenResizeEvent();
@@ -115,10 +119,10 @@ module.exports = class Game {
             case 16:
                 this.currentPlayer.stopMove('sprint');
                 break;
-            // case 32: // space
-            // case 74: // j
-            //     this.currentPlayer.fire();
-            //     break;
+            case 32: // space
+            case 74: // j
+                this.currentPlayer.fire();
+                break;
         }
     }
 
@@ -126,16 +130,28 @@ module.exports = class Game {
      * Render the players and other bullets
      */
     render = () => {
+        // Calculate the offset we need to use to draw the other objects correctly
+        var viewportOffsetWidth = this.canvas.width / 2 - this.currentPlayer.player.width / 2;
+        var viewportOffsetHeight = this.canvas.height / 2 - this.currentPlayer.player.height / 2;
+
         Object.keys(this.players).map((key) => {
             let tempPlayer = this.players[key];
 
             // Check if player is already rendered/has a player object
             if (!tempPlayer.object) {
                 // Create new object at the correct location
-                tempPlayer.object = new Player(tempPlayer.x, tempPlayer.y, tempPlayer.angle, this.canvas);
+                tempPlayer.object = new Player(
+                    viewportOffsetWidth + tempPlayer.x - this.currentPlayer.x,
+                    viewportOffsetHeight + tempPlayer.y - this.currentPlayer.y,
+                    tempPlayer.angle, this.canvas
+                );
             } else {
                 // update the new coordinates
-                tempPlayer.object.setPosition(tempPlayer.x, tempPlayer.y, tempPlayer.angle);
+                tempPlayer.object.setPosition(
+                    viewportOffsetWidth + tempPlayer.x - this.currentPlayer.x,
+                    viewportOffsetHeight + tempPlayer.y - this.currentPlayer.y,
+                    tempPlayer.angle
+                );
             }
 
             // Check if we need to update the color
@@ -223,6 +239,7 @@ module.exports = class Game {
      * @private
      */
     _SocketBullets = (newBullets) => {
+        return;
         Object.keys(newBullets).map((key) => {
             if (!this.bullets[key]) {
                 // Add a new player
@@ -252,6 +269,15 @@ module.exports = class Game {
 
         // Send our location
         this.currentPlayer.emitInfo();
+    }
+
+    /**
+     * Update the viewport width and height
+     * @param viewportData
+     * @private
+     */
+    _SocketUpdateViewport = (viewportData) => {
+        this.viewport.updateSize(viewportData.width, viewportData.height);
     }
 
     /**
@@ -294,8 +320,9 @@ module.exports = class Game {
     setSocketHandlers = () => {
         this.socket.on('disconnect', this._SocketDisconnect);
         this.socket.on('update id', this._SocketUpdateId);
-        this.socket.on('players', this._SocketPlayers);
-        this.socket.on('bullets', this._SocketBullets);
+        this.socket.on('update viewport', this._SocketUpdateViewport);
+        this.socket.on('update players', this._SocketPlayers);
+        this.socket.on('update bullets', this._SocketBullets);
         this.socket.on('player leave', this._SocketPlayerLeave);
     }
 }

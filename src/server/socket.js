@@ -2,6 +2,9 @@
 const SocketIO = require('socket.io');
 const uuid = require('uuid');
 
+const viewportWidth = 400;
+const viewportHeight = 400;
+
 var players = {};
 var playerIndex = {};
 var bullets = {};
@@ -16,11 +19,11 @@ module.exports = (httpServer) => {
     }
 
     let SendPlayers = () => {
-        io.emit('players', players);
+        io.emit('update players', players);
     }
 
     let SendObjects = () => {
-        io.emit('bullets', bullets);
+        io.emit('update bullets', bullets);
     }
 
     io.on('connection', (socket) => {
@@ -37,8 +40,8 @@ module.exports = (httpServer) => {
         });
         if (IpFound) {
             // already connected
-            socket.disconnect();
-            return;
+            // socket.disconnect();
+            // return;
         }
 
         // Create a new random player
@@ -50,6 +53,12 @@ module.exports = (httpServer) => {
 
         // Tells the client its new id
         socket.emit('update id', randId);
+
+        // Update the viewport
+        socket.emit('update viewport', {
+            width: viewportWidth,
+            height: viewportHeight
+        })
 
         // Send initial player list
         SendPlayers();
