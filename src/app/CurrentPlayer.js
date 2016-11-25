@@ -19,7 +19,9 @@ module.exports = class CurrentPlayer {
 
         // generate a new player object
         this.player = new Player(50, 50, 0, this.canvas)
-        this.player.setPropertyValue('color', 'blue')
+        this.player.setPropertyValue('color', '#' + '0123456789abcdef'.split('').map(function (v, i, a) {
+                return i > 5 ? null : a[Math.floor(Math.random() * 16)]
+            }).join(''))
     }
 
     /**
@@ -49,7 +51,7 @@ module.exports = class CurrentPlayer {
         let yChange = 0;
         let angleChange = 0;
 
-        if(this.movement.sprint){
+        if (this.movement.sprint) {
             tempMoveSpeed = tempMoveSpeed * 2;
             tempTurnSpeed = tempTurnSpeed * 2;
         }
@@ -108,7 +110,7 @@ module.exports = class CurrentPlayer {
             );
 
             // Send new location to server
-            this.emitLocation();
+            this.emitInfo();
         }
     }
 
@@ -123,11 +125,12 @@ module.exports = class CurrentPlayer {
     /**
      * Send the current location to the server
      */
-    emitLocation = () => {
+    emitInfo = () => {
         this.socket.emit('update player', {
             x: this.player.x,
             y: this.player.y,
             angle: this.player.angle,
+            color: this.player.properties.color,
         });
     }
 

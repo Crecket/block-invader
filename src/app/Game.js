@@ -137,6 +137,11 @@ module.exports = class Game {
                 // update the new coordinates
                 tempPlayer.object.setPosition(tempPlayer.x, tempPlayer.y, tempPlayer.angle);
             }
+
+            // Check if we need to update the color
+            if (tempPlayer.object.properties.color !== tempPlayer.color) {
+                tempPlayer.object.setPropertyValue('color', tempPlayer.color);
+            }
         });
         // Object.keys(this.bullets).map((key) => {
         //     let tempBullet = this.bullets[key];
@@ -198,6 +203,7 @@ module.exports = class Game {
                         x: newPlayers[key].x,
                         y: newPlayers[key].y,
                         angle: newPlayers[key].angle,
+                        color: newPlayers[key].color,
                         object: false
                     }
                 } else {
@@ -205,6 +211,7 @@ module.exports = class Game {
                     this.players[key].x = newPlayers[key].x;
                     this.players[key].y = newPlayers[key].y;
                     this.players[key].angle = newPlayers[key].angle;
+                    this.players[key].color = newPlayers[key].color;
                 }
             }
         })
@@ -244,7 +251,7 @@ module.exports = class Game {
         this.client_id = id;
 
         // Send our location
-        this.currentPlayer.emitLocation();
+        this.currentPlayer.emitInfo();
     }
 
     /**

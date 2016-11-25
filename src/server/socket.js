@@ -91,5 +91,18 @@ module.exports = (httpServer) => {
         }
     }, 1000 / 60)
 
+    setInterval(() => {
+        var sockets = io.sockets.sockets;
+        Object.keys(playerIndex).map((key) => {
+            var tempPlayer = playerIndex[key];
+            // console.log("\n");
+            // console.log(Object.keys(playerIndex))
+            // console.log(tempPlayer)
+            // if (!sockets[tempPlayer.socketId]) {
+            //     console.log('not found');
+            // }
+        });
+    }, 2000)
+
     return io;
 }
