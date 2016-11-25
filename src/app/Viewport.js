@@ -12,12 +12,14 @@ module.exports = class Viewport {
         this.viewport = new fabric.Rect({
             width: this.width,
             height: this.height,
-            // angle: this.angle,
-            top: this.canvas.height / 2 - 32 - this.y,
-            left: this.canvas.width / 2 - 24 - this.x,
+            top: this.getScreenCenterHeight(),
+            left: this.getScreenCenterWidth(),
             fill: 'black'
         })
         this.canvas.add(this.viewport);
+
+        // Update
+        this.update();
     }
 
     /**
@@ -25,12 +27,10 @@ module.exports = class Viewport {
      *
      * @param x
      * @param y
-     * @param angle
      */
     setPosition = (x, y, angle) => {
         this.playerX = x;
         this.playerY = y;
-        // this.angle = angle % 360;
         this.update();
     }
 
@@ -49,16 +49,13 @@ module.exports = class Viewport {
      * Re-render the viewport
      */
     update = () => {
-        let screenCenterHeight = this.canvas.height / 2 - 32;
-        let screenCenterWidth = this.canvas.width / 2 - 24;
 
         // Update the values
         this.viewport.set({
             width: this.width,
             height: this.height,
-            // angle: this.angle,
-            top: screenCenterHeight + this.height / 2 - this.playerY,
-            left: screenCenterWidth + this.width / 2 - this.playerX,
+            top: this.getScreenCenterHeight(),
+            left: this.getScreenCenterWidth(),
 
             originX: 'center',
             originY: 'center',
@@ -70,6 +67,14 @@ module.exports = class Viewport {
             selectable: false,
             hoverCursor: 'default',
         })
+    }
+
+    getScreenCenterHeight = () => {
+        return this.canvas.height / 2 - 32 + this.height / 2 - this.playerY;
+    }
+
+    getScreenCenterWidth = () => {
+        return this.canvas.width / 2 - 24 + this.width / 2 - this.playerX;
     }
 
 }

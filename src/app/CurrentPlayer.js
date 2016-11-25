@@ -59,8 +59,8 @@ module.exports = class CurrentPlayer {
         let angleChange = 0;
 
         if (this.movement.sprint) {
-            tempMoveSpeed = tempMoveSpeed * 1.5;
-            tempTurnSpeed = tempTurnSpeed * 1.5;
+            tempMoveSpeed += 1.5;
+            tempTurnSpeed *= 0.7;
         }
 
         // Go through all active movements
