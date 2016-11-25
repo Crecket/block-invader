@@ -40,7 +40,6 @@ var config = {
             allChunks: true
         }),
         new webpack.DefinePlugin({
-            "NODE_ENV": process.env.NODE_ENV,
             "PRODUCTION_MODE": process.env.NODE_ENV === "production" ? true : false,
             "DEVELOPMENT_MODE": process.env.NODE_ENV === "production" ? false : true,
         }),
