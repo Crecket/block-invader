@@ -28,8 +28,14 @@ module.exports = (httpServer) => {
         var randId = uuid();
         var clientIp = socket.request.connection.remoteAddress;
 
-        // check ip
-        if (playerIndex[clientIp]) {
+        // Check ip
+        var IpFound = false;
+        Object.keys(playerIndex).map((key) => {
+            if (clientIp === playerIndex[key]['clientIp']) {
+                IpFound = true;
+            }
+        });
+        if (IpFound) {
             // already connected
             socket.disconnect();
             return;
@@ -41,8 +47,6 @@ module.exports = (httpServer) => {
             randId: randId,
             clientIp: clientIp
         }
-        // register ip
-        playerIndex[clientIp] = true;
 
         // Tells the client its new id
         socket.emit('update id', randId);
@@ -91,18 +95,23 @@ module.exports = (httpServer) => {
         }
     }, 1000 / 60)
 
+    // Check for inactivity
     setInterval(() => {
         var sockets = io.sockets.sockets;
+
+        // Loop through player index
         Object.keys(playerIndex).map((key) => {
             var tempPlayer = playerIndex[key];
-            // console.log("\n");
-            // console.log(Object.keys(playerIndex))
-            // console.log(tempPlayer)
-            // if (!sockets[tempPlayer.socketId]) {
-            //     console.log('not found');
-            // }
+
+            // Check if socket still exists
+            if (!sockets[tempPlayer.socketId]) {
+                console.log('not found');
+                // Delete the index values
+                delete player[playerIndex[key]['randId']];
+                delete playerIndex[key];
+            }
         });
-    }, 2000)
+    }, 3000)
 
     return io;
 }
