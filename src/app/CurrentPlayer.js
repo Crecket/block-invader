@@ -13,11 +13,13 @@ module.exports = class CurrentPlayer {
             up: false,
             down: false,
             left: false,
-            right: false
+            right: false,
+            sprint: false
         }
 
         // generate a new player object
         this.player = new Player(50, 50, 0, this.canvas)
+        this.player.setPropertyValue('color', 'blue')
     }
 
     /**
@@ -46,6 +48,11 @@ module.exports = class CurrentPlayer {
         let xChange = 0;
         let yChange = 0;
         let angleChange = 0;
+
+        if(this.movement.sprint){
+            tempMoveSpeed = tempMoveSpeed * 2;
+            tempTurnSpeed = tempTurnSpeed * 2;
+        }
 
         // Go through all active movements
         if (this.movement.up) {
@@ -110,7 +117,7 @@ module.exports = class CurrentPlayer {
      */
     fire = () => {
         // send a fire event with our latest info
-        this.socket.emit('fire');
+        // this.socket.emit('fire');
     }
 
     /**

@@ -83,6 +83,9 @@ module.exports = class Game {
             case 68:
                 this.currentPlayer.startMove('right');
                 break;
+            case 16:
+                this.currentPlayer.startMove('sprint');
+                break;
             case 32: // space
             case 74: // j
                 this.currentPlayer.fire();
@@ -109,6 +112,9 @@ module.exports = class Game {
             case 68:
                 this.currentPlayer.stopMove('right');
                 break;
+            case 16:
+                this.currentPlayer.stopMove('sprint');
+                break;
             // case 32: // space
             // case 74: // j
             //     this.currentPlayer.fire();
@@ -132,6 +138,18 @@ module.exports = class Game {
                 tempPlayer.object.setPosition(tempPlayer.x, tempPlayer.y, tempPlayer.angle);
             }
         });
+        // Object.keys(this.bullets).map((key) => {
+        //     let tempBullet = this.bullets[key];
+        //
+        //     // Check if player is already rendered/has a player object
+        //     if (!tempBullet.object) {
+        //         // Create new object at the correct location
+        //         tempBullet.object = new Bullet(tempBullet.x, tempBullet.y, tempBullet.angle, this.canvas);
+        //     } else {
+        //         // update the new coordinates
+        //         tempBullet.object.setPosition(tempBullet.x, tempBullet.y, tempBullet.angle);
+        //     }
+        // });
     }
 
     /**

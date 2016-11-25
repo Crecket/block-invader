@@ -26,12 +26,23 @@ module.exports = (httpServer) => {
     io.on('connection', (socket) => {
         var socketId = socket.id;
         var randId = uuid();
+        var clientIp = socket.request.connection.remoteAddress;
+
+        // check ip
+        if (playerIndex[clientIp]) {
+            // already connected
+            socket.disconnect();
+            return;
+        }
 
         // Create a new random player
         playerIndex[socketId] = {
             socketId: socketId,
-            randId: randId
+            randId: randId,
+            clientIp: clientIp
         }
+        // register ip
+        playerIndex[clientIp] = true;
 
         // Tells the client its new id
         socket.emit('update id', randId);
@@ -66,6 +77,7 @@ module.exports = (httpServer) => {
             // destroy the inf  idels
             delete players[randId];
             delete playerIndex[socketId];
+            delete playerIndex[clientIp];
 
             // Make sure other clients realize the player is gone
             io.emit('player leave', randId);
