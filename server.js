@@ -32,5 +32,5 @@ app.get('/socket.io.js.map', (req, res) => {
 });
 
 httpServer.listen(3000, function () {
-    console.log('listening on *:3000');
+    console.log('listening on *:3000 in ' + process.env.NODE_ENV + ' mode');
 });

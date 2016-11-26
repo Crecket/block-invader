@@ -2,8 +2,8 @@
 const SocketIO = require('socket.io');
 const uuid = require('uuid');
 
-const viewportWidth = 400;
-const viewportHeight = 400;
+const viewportWidth = 1200;
+const viewportHeight = 100;
 
 var players = {};
 var playerIndex = {};
@@ -40,8 +40,8 @@ module.exports = (httpServer) => {
         });
         if (IpFound) {
             // already connected
-            // socket.disconnect();
-            // return;
+            socket.disconnect();
+            return;
         }
 
         // Create a new random player

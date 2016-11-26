@@ -6,6 +6,8 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 // env variable check
 var DEV = process.env.NODE_ENV !== "production";
 
+console.log('Started webpack in ' + process.env.NODE_ENV + ' mode');
+
 var BUILD_DIR = path.resolve(__dirname, 'public/');
 var SRC_DIR = path.resolve(__dirname, 'src/');
 
