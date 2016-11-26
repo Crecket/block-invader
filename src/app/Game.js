@@ -134,6 +134,7 @@ module.exports = class Game {
         var viewportOffsetWidth = this.canvas.width / 2 - this.currentPlayer.player.width / 2;
         var viewportOffsetHeight = this.canvas.height / 2 - this.currentPlayer.player.height / 2;
 
+        // Loop through all players
         Object.keys(this.players).map((key) => {
             let tempPlayer = this.players[key];
 
@@ -159,18 +160,37 @@ module.exports = class Game {
                 tempPlayer.object.setPropertyValue('color', tempPlayer.color);
             }
         });
-        // Object.keys(this.bullets).map((key) => {
-        //     let tempBullet = this.bullets[key];
-        //
-        //     // Check if player is already rendered/has a player object
-        //     if (!tempBullet.object) {
-        //         // Create new object at the correct location
-        //         tempBullet.object = new Bullet(tempBullet.x, tempBullet.y, tempBullet.angle, this.canvas);
-        //     } else {
-        //         // update the new coordinates
-        //         tempBullet.object.setPosition(tempBullet.x, tempBullet.y, tempBullet.angle);
-        //     }
-        // });
+
+        Object.keys(this.bullets).map((key) => {
+            let tempBullet = this.bullets[key];
+
+            // Check if still visible, else dont render it
+            if (tempBullet.x > this.viewport.width || tempBullet.x < 0 ||
+                tempBullet.y > this.viewport.height || tempBullet.y < 0) {
+                // this bullet isn't in the viewport, dont render it
+                this.bullets[key].object.remove();
+                delete this.bullets[key];
+                return;
+            }
+
+            // Check if player is already rendered/has a player object
+            if (!tempBullet.object) {
+                // Create new object at the correct location
+                tempBullet.object = new Bullet(
+                    viewportOffsetWidth + tempBullet.x - this.currentPlayer.x,
+                    viewportOffsetHeight + tempBullet.y - this.currentPlayer.y,
+                    tempBullet.angle,
+                    this.canvas
+                );
+            } else {
+                // update the new coordinates
+                tempBullet.object.setPosition(
+                    viewportOffsetWidth + tempBullet.x - this.currentPlayer.x,
+                    viewportOffsetHeight + tempBullet.y - this.currentPlayer.y,
+                    tempBullet.angle
+                );
+            }
+        });
     }
 
     /**
@@ -239,7 +259,6 @@ module.exports = class Game {
      * @private
      */
     _SocketBullets = (newBullets) => {
-        return;
         Object.keys(newBullets).map((key) => {
             if (!this.bullets[key]) {
                 // Add a new player
@@ -253,7 +272,6 @@ module.exports = class Game {
                 // Update existing player
                 this.bullets[key].x = newBullets[key].x;
                 this.bullets[key].y = newBullets[key].y;
-                this.bullets[key].angle = newBullets[key].angle;
             }
         })
     }

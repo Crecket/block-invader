@@ -12,7 +12,7 @@ module.exports = class Bullet {
 
         // Extra propertiees
         this.properties = {
-            color: '#222',
+            color: '#fff',
         };
 
         // Generate the player object
@@ -25,12 +25,9 @@ module.exports = class Bullet {
     update = () => {
         // Update the canvas object
         this.bullet.set({
-            'left': this.x,
-            'top': this.y,
-            'width': this.width,
-            'height': this.height,
-            'angle': this.angle,
-            'fill': this.properties.color
+            left: this.x,
+            top: this.y,
+            fill: this.properties.color
         });
 
         // Update the canvas

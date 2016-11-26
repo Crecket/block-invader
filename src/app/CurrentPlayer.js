@@ -137,7 +137,6 @@ module.exports = class CurrentPlayer {
      * Tell the server we want to fire
      */
     fire = () => {
-        return;
         this.socket.emit('fire');
     }
 
