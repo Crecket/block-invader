@@ -1,8 +1,5 @@
 import Player from './Player';
 
-const moveSpeed = 80;
-const turnSpeed = 45;
-
 module.exports = class CurrentPlayer {
     constructor(canvas, socket, viewport) {
         this.canvas = canvas;
@@ -28,11 +25,6 @@ module.exports = class CurrentPlayer {
         // Generate a new player object
         this.player = new Player(this.x, this.y, this.angle, this.canvas)
 
-        // Random color
-        this.player.setPropertyValue('color', '#' + '0123456789abcdef'.split('').map(function (v, i, a) {
-                return i > 5 ? null : a[Math.floor(Math.random() * 16)]
-            }).join(''))
-
         // Initial update
         this.update();
     }
@@ -51,6 +43,20 @@ module.exports = class CurrentPlayer {
      */
     stopAction = (direction) => {
         this.actions[direction] = false;
+    }
+
+    /**
+     * Clear all actions
+     */
+    clearActions = () => {
+        this.actions = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            sprint: false,
+            fire: false
+        }
     }
 
     /**
@@ -76,14 +82,10 @@ module.exports = class CurrentPlayer {
     }
 
     /**
-     * Send the current location to the server
+     * Send the current actions and color to the server, all other info is handled server side
      */
     emitInfo = () => {
         this.socket.emit('update player', {
-            x: this.x,
-            y: this.y,
-            angle: this.angle,
-            color: this.player.properties.color,
             actions: this.actions
         });
     }

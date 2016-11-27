@@ -35,18 +35,29 @@ module.exports = class Game {
             hoverCursor: 'default',
             scale: this.scale
         });
+
         // Keystroke handler
         document.onkeydown = this.handleKeyDown;
         document.onkeyup = this.handleKeyUp;
-
-        // Resize screen handler
-        $(window).on('resize', this.screenResizeEvent);
 
         // Generate the viewport handler
         this.viewport = new Viewport(this.canvas);
 
         // Generate a current player object
         this.currentPlayer = new CurrentPlayer(this.canvas, this.socket, this.viewport);
+
+        // Window resize handler
+        window.onresize = () => {
+            this.screenResizeEvent();
+        }
+
+        // Window handlers to reset actions
+        window.onblur = () => {
+            this.currentPlayer.clearActions();
+        }
+        window.oncontextmenu  = () => {
+            this.currentPlayer.clearActions();
+        }
 
         // Initial screen size check
         this.screenResizeEvent();
@@ -240,6 +251,7 @@ module.exports = class Game {
                 this.currentPlayer.x = newPlayers[key].x;
                 this.currentPlayer.y = newPlayers[key].y;
                 this.currentPlayer.angle = newPlayers[key].angle;
+
                 // Update the view
                 this.currentPlayer.update();
 

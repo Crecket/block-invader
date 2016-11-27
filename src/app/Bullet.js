@@ -6,6 +6,13 @@ module.exports = class Bullet {
         this.angle = startAngle;
         this.canvas = canvas;
 
+        // Timeout fallback in case a bullet gets stuck or isn't removed propperly
+        this.timeout = setTimeout(() => {
+            if(this.bullet){
+                this.bullet.remove();
+            }
+        }, 3000);
+
         // store the width and height
         this.width = 4;
         this.height = 4;
@@ -37,7 +44,6 @@ module.exports = class Bullet {
 
     /**
      * Sets the player position and angle to a new value
-     *
      * @param x
      * @param y
      * @param angle
@@ -51,7 +57,6 @@ module.exports = class Bullet {
 
     /**
      * Sets a property value
-     *
      * @param key
      * @param value
      */
@@ -65,6 +70,7 @@ module.exports = class Bullet {
      */
     remove = () => {
         this.bullet.remove();
+        this.bullet = false;
     }
 
     /**

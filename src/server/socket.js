@@ -3,15 +3,15 @@ const SocketIO = require('socket.io');
 const uuid = require('uuid');
 
 // The virtual viewport size
-const ViewportWidth = 800;
-const ViewportHeight = 800;
+const ViewportWidth = 600;
+const ViewportHeight = 600;
 
 // Speed at which the bullets fly
 const BulletSpeed = 9;
 const PlayerWidth = 24;
 const PlayerHeight = 32;
 const PlayerMoveSpeed = 3;
-const PlayerTurnSpeed = 2.5;
+const PlayerTurnSpeed = 2.8;
 
 // Objects to store the bullets and players
 var players = {};
@@ -19,20 +19,23 @@ var playerIndex = {};
 var bullets = {};
 
 module.exports = (httpServer) => {
-    var io = SocketIO(httpServer);
+    var io = SocketIO(httpServer, {'pingTimeout': 2000});
 
     // Emit general server info
     let SendInfo = () => {
         SendPlayers();
         SendObjects();
     }
-
     let SendPlayers = () => {
         io.emit('update players', players);
     }
-
     let SendObjects = () => {
         io.emit('update bullets', bullets);
+    }
+
+    // Generate random integer
+    let randomInt = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     // Calculate the next point
@@ -79,7 +82,7 @@ module.exports = (httpServer) => {
             let randId = playerIndexInfo.randId;
             let playerInfo = players[randId];
 
-            if(!playerInfo){
+            if (!playerInfo) {
                 return;
             }
 
@@ -120,7 +123,7 @@ module.exports = (httpServer) => {
             let playerIndexInfo = playerIndex[key];
             let playerInfo = players[playerIndexInfo.randId];
 
-            if(!playerInfo){
+            if (!playerInfo || !playerInfo.actions) {
                 return;
             }
 
@@ -150,7 +153,8 @@ module.exports = (httpServer) => {
             }
 
             // calculate the new angle and set it
-            players[playerIndexInfo.randId].angle = playerInfo.angle + angleChange;;
+            players[playerIndexInfo.randId].angle = playerInfo.angle + angleChange;
+            ;
 
             // Check if we require to update player position
             if (yChange !== 0) {
@@ -197,7 +201,6 @@ module.exports = (httpServer) => {
         var randId = uuid();
         var clientIp = socket.request.connection.remoteAddress;
 
-        // Check ip
         // TODO propper ip checks
         var IpFound = false;
         Object.keys(playerIndex).map((key) => {
@@ -212,6 +215,27 @@ module.exports = (httpServer) => {
             randId: randId,
             clientIp: clientIp,
             allowFire: true
+        }
+        // Set the intitial player info
+        players[randId] = {
+            // Random spawn points
+            x: randomInt(0, ViewportWidth),
+            y: randomInt(0, ViewportHeight),
+            // Random angle
+            angle: randomInt(0, 360),
+            // Random color
+            color: '#' + '0123456789abcdef'.split('').map(function (v, i, a) {
+                return i > 5 ? null : a[Math.floor(Math.random() * 16)]
+            }).join(''),
+            // Default action values
+            actions: {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+                sprint: false,
+                fire: false
+            }
         }
 
         // Tells the client its new id
@@ -273,13 +297,12 @@ module.exports = (httpServer) => {
 
             // Check if socket still exists
             if (!sockets[tempPlayer.socketId]) {
-                console.log('not found');
                 // Delete the index values
                 delete player[playerIndex[key]['randId']];
                 delete playerIndex[key];
             }
         });
-    }, 3000)
+    }, 2000)
 
     return io;
 }
