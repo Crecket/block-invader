@@ -219,8 +219,8 @@ module.exports = (httpServer) => {
         // Set the intitial player info
         players[randId] = {
             // Random spawn points
-            x: randomInt(0, ViewportWidth),
-            y: randomInt(0, ViewportHeight),
+            x: randomInt(0 + PlayerWidth, ViewportWidth + PlayerWidth),
+            y: randomInt(0 + PlayerWidth, ViewportHeight + PlayerWidth),
             // Random angle
             angle: randomInt(0, 360),
             // Random color

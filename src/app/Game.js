@@ -55,7 +55,7 @@ module.exports = class Game {
         window.onblur = () => {
             this.currentPlayer.clearActions();
         }
-        window.oncontextmenu  = () => {
+        window.oncontextmenu = () => {
             this.currentPlayer.clearActions();
         }
 
@@ -251,6 +251,7 @@ module.exports = class Game {
                 this.currentPlayer.x = newPlayers[key].x;
                 this.currentPlayer.y = newPlayers[key].y;
                 this.currentPlayer.angle = newPlayers[key].angle;
+                this.currentPlayer.player.setPropertyValue('color', newPlayers[key].color);
 
                 // Update the view
                 this.currentPlayer.update();
