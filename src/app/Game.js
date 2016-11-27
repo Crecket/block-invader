@@ -163,6 +163,7 @@ module.exports = class Game {
             }
         });
 
+        // Loop through all bullets
         Object.keys(this.bullets).map((key) => {
             let tempBullet = this.bullets[key];
 
@@ -170,7 +171,7 @@ module.exports = class Game {
             if (tempBullet.x > this.viewport.width || tempBullet.x < -20 ||
                 tempBullet.y > this.viewport.height || tempBullet.y < -20) {
                 // this bullet isn't in the viewport, dont render it
-                if(this.bullets[key].object){
+                if (this.bullets[key].object) {
                     this.bullets[key].object.remove();
                 }
                 delete this.bullets[key];
@@ -235,6 +236,14 @@ module.exports = class Game {
         Object.keys(newPlayers).map((key) => {
             // remove this client from the list by client_id
             if (key === this.client_id) {
+                // Update our player values
+                this.currentPlayer.x = newPlayers[key].x;
+                this.currentPlayer.y = newPlayers[key].y;
+                this.currentPlayer.angle = newPlayers[key].angle;
+                // Update the view
+                this.currentPlayer.update();
+
+                // Remove from the list
                 delete newPlayers[key];
             } else {
                 if (!this.players[key]) {

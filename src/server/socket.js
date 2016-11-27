@@ -3,11 +3,15 @@ const SocketIO = require('socket.io');
 const uuid = require('uuid');
 
 // The virtual viewport size
-const viewportWidth = 500;
-const viewportHeight = 500;
+const ViewportWidth = 800;
+const ViewportHeight = 800;
 
 // Speed at which the bullets fly
 const BulletSpeed = 9;
+const PlayerWidth = 24;
+const PlayerHeight = 32;
+const PlayerMoveSpeed = 3;
+const PlayerTurnSpeed = 2.5;
 
 // Objects to store the bullets and players
 var players = {};
@@ -31,6 +35,7 @@ module.exports = (httpServer) => {
         io.emit('update bullets', bullets);
     }
 
+    // Calculate the next point
     let findNewPoint = (x, y, angle, distance) => {
         return {
             x: Math.round(Math.cos((angle - 90) * Math.PI / 180) * distance + x),
@@ -40,12 +45,19 @@ module.exports = (httpServer) => {
 
     // animate the bullets and remove when neccesary
     let animate = () => {
+        // Move all the players
+        movePlayers();
+
+        // Check for fire events for all players
+        firePlayers();
+
+        // Iterate through all bullets
         Object.keys(bullets).map((key) => {
             let tempBullet = bullets[key];
 
             // Check if the bullet is still within viewport range
-            if (tempBullet.x > viewportWidth + 50 || tempBullet.x < -50 ||
-                tempBullet.y > viewportHeight + 50 || tempBullet.y < -50) {
+            if (tempBullet.x > ViewportWidth + 50 || tempBullet.x < -50 ||
+                tempBullet.y > ViewportHeight + 50 || tempBullet.y < -50) {
                 // rekt the bullet
                 delete bullets[key];
             } else {
@@ -59,39 +71,125 @@ module.exports = (httpServer) => {
         });
     }
 
-    // Receive new player info from client
-    var fire = (socketId) => {
-        let playerIndexInfo = playerIndex[socketId];
-        let randId = playerIndexInfo.randId;
-        let playerInfo = players[randId];
+    // Check all players if they want/can fire
+    var firePlayers = () => {
+        // Loop through players
+        Object.keys(playerIndex).map((key) => {
+            let playerIndexInfo = playerIndex[key];
+            let randId = playerIndexInfo.randId;
+            let playerInfo = players[randId];
 
-        // Check if we're firing
-        if (!playerInfo.actions.fire) {
-            return;
-        }
-
-        // check if we're allowed to fire
-        if (playerIndexInfo.allowFire !== true) {
-            // Calculate time difference
-            let timeDiff = new Date().getTime() - playerIndexInfo.allowFire;
-            // Allow every x seconds, else return and dont do anything
-            if (timeDiff < 250) {
-                return
-            }
-        }
-
-        // Check if player still exists
-        if (playerInfo) {
-            // add new bullet
-            bullets[uuid()] = {
-                x: playerInfo.x,
-                y: playerInfo.y,
-                angle: playerInfo.angle,
+            if(!playerInfo){
+                return;
             }
 
-            // set the player timeout value
-            playerIndexInfo.allowFire = new Date().getTime();
-        }
+            // Check if we're firing
+            if (!playerInfo.actions.fire) {
+                return;
+            }
+
+            // check if we're allowed to fire
+            if (playerIndexInfo.allowFire !== true) {
+                // Calculate time difference
+                let timeDiff = new Date().getTime() - playerIndexInfo.allowFire;
+                // Allow every x seconds, else return and dont do anything
+                if (timeDiff < 250) {
+                    return
+                }
+            }
+
+            // Check if player still exists
+            if (playerInfo) {
+                // add new bullet
+                bullets[uuid()] = {
+                    x: playerInfo.x,
+                    y: playerInfo.y,
+                    angle: playerInfo.angle,
+                }
+
+                // set the player timeout value
+                playerIndexInfo.allowFire = new Date().getTime();
+            }
+        });
+    }
+
+    // Check the movement for this player and update it
+    var movePlayers = () => {
+        // Loop through all players
+        Object.keys(playerIndex).map((key) => {
+            let playerIndexInfo = playerIndex[key];
+            let playerInfo = players[playerIndexInfo.randId];
+
+            if(!playerInfo){
+                return;
+            }
+
+            let tempMoveSpeed = PlayerMoveSpeed;
+            let tempTurnSpeed = PlayerTurnSpeed;
+            let yChange = 0;
+            let angleChange = 0;
+
+            // Sprint modifier
+            if (playerInfo.actions.sprint) {
+                tempMoveSpeed += 1.5;
+                tempTurnSpeed *= 0.7;
+            }
+
+            // Go through all active movements
+            if (playerInfo.actions.up) {
+                yChange -= tempMoveSpeed;
+            }
+            if (playerInfo.actions.down) {
+                yChange += tempMoveSpeed;
+            }
+            if (playerInfo.actions.right) {
+                angleChange += tempTurnSpeed;
+            }
+            if (playerInfo.actions.left) {
+                angleChange -= tempTurnSpeed;
+            }
+
+            // calculate the new angle and set it
+            players[playerIndexInfo.randId].angle = playerInfo.angle + angleChange;;
+
+            // Check if we require to update player position
+            if (yChange !== 0) {
+
+                // Calculate the new position
+                var newPoint = findNewPoint(playerInfo.x, playerInfo.y, playerInfo.angle, PlayerMoveSpeed);
+
+                // Set the x/y
+                let tempNewX = newPoint.x;
+                let tempNewY = newPoint.y;
+
+                // Calculate x/y based on angle
+                if (yChange > 0) {
+                    tempNewX += tempMoveSpeed * Math.cos((players[playerIndexInfo.randId].angle + 90) * Math.PI / 180);
+                    tempNewY += tempMoveSpeed * Math.sin((players[playerIndexInfo.randId].angle + 90) * Math.PI / 180);
+                } else if (yChange < 0) {
+                    tempNewX -= tempMoveSpeed * Math.cos((players[playerIndexInfo.randId].angle + 90) * Math.PI / 180);
+                    tempNewY -= tempMoveSpeed * Math.sin((players[playerIndexInfo.randId].angle + 90) * Math.PI / 180);
+                }
+
+                // check out of bounds
+                if (tempNewX < 0) {
+                    tempNewX = 0;
+                }
+                if (tempNewX > ViewportWidth - PlayerWidth) {
+                    tempNewX = ViewportWidth - PlayerWidth;
+                }
+                if (tempNewY < 0) {
+                    tempNewY = 0;
+                }
+                if (tempNewY > ViewportHeight - PlayerHeight) {
+                    tempNewY = ViewportHeight - PlayerHeight;
+                }
+
+                // Update values
+                players[playerIndexInfo.randId].x = tempNewX;
+                players[playerIndexInfo.randId].y = tempNewY;
+            }
+        })
     }
 
     io.on('connection', (socket) => {
@@ -100,18 +198,13 @@ module.exports = (httpServer) => {
         var clientIp = socket.request.connection.remoteAddress;
 
         // Check ip
+        // TODO propper ip checks
         var IpFound = false;
         Object.keys(playerIndex).map((key) => {
             if (clientIp === playerIndex[key]['clientIp']) {
                 IpFound = true;
             }
         });
-        // TODO propper ip checks
-        if (IpFound) {
-            // already connected
-            // socket.disconnect();
-            // return;
-        }
 
         // Create a new random player
         playerIndex[socketId] = {
@@ -126,9 +219,9 @@ module.exports = (httpServer) => {
 
         // Update the viewport
         socket.emit('update viewport', {
-            width: viewportWidth,
-            height: viewportHeight
-        })
+            width: ViewportWidth,
+            height: ViewportHeight
+        });
 
         // Send the player list to everyone
         SendPlayers();
@@ -144,7 +237,7 @@ module.exports = (httpServer) => {
             }
 
             // Check if we need to fire
-            fire(socketId);
+            firePlayers(socketId);
         });
 
         // Client disconnected
@@ -160,8 +253,12 @@ module.exports = (httpServer) => {
 
     // Update clients every frame ~16 ms
     setInterval(() => {
-        animate();
+        // If we have atleast 1 player
         if (Object.keys(players).length > 0) {
+            // Animate function
+            animate();
+
+            // Send the info to the clients
             SendInfo();
         }
     }, 1000 / 60)

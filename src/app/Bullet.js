@@ -7,8 +7,8 @@ module.exports = class Bullet {
         this.canvas = canvas;
 
         // store the width and height
-        this.width = 2;
-        this.height = 2;
+        this.width = 4;
+        this.height = 4;
 
         // Extra propertiees
         this.properties = {
