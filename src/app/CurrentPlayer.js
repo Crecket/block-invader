@@ -13,14 +13,16 @@ module.exports = class CurrentPlayer {
         this.x = 0;
         this.y = 0;
         this.angle = 0;
+        this.allowFire = new Date().getTime();
 
-        // store the current movement directions
-        this.movement = {
+        // store the current actions directions
+        this.actions = {
             up: false,
             down: false,
             left: false,
             right: false,
-            sprint: false
+            sprint: false,
+            fire: false
         }
 
         // generate a new player object
@@ -35,16 +37,16 @@ module.exports = class CurrentPlayer {
      * Start moving in a direction
      * @param direction
      */
-    startMove = (direction) => {
-        this.movement[direction] = true;
+    startAction = (direction) => {
+        this.actions[direction] = true;
     }
 
     /**
      * Stop moving in a direction
      * @param direction
      */
-    stopMove = (direction) => {
-        this.movement[direction] = false;
+    stopAction = (direction) => {
+        this.actions[direction] = false;
     }
 
     /**
@@ -54,31 +56,31 @@ module.exports = class CurrentPlayer {
     update = (delta) => {
         let tempMoveSpeed = moveSpeed / delta;
         let tempTurnSpeed = turnSpeed / delta;
-        let xChange = 0;
         let yChange = 0;
         let angleChange = 0;
 
-        if (this.movement.sprint) {
+        // Sprint modifier
+        if (this.actions.sprint) {
             tempMoveSpeed += 1.5;
             tempTurnSpeed *= 0.7;
         }
 
         // Go through all active movements
-        if (this.movement.up) {
+        if (this.actions.up) {
             yChange -= tempMoveSpeed;
         }
-        if (this.movement.down) {
+        if (this.actions.down) {
             yChange += tempMoveSpeed;
         }
-        if (this.movement.right) {
+        if (this.actions.right) {
             angleChange += tempTurnSpeed;
         }
-        if (this.movement.left) {
+        if (this.actions.left) {
             angleChange -= tempTurnSpeed;
         }
 
         // Check if we require to update player position
-        if (xChange !== 0 || yChange !== 0 || angleChange !== 0) {
+        if (yChange !== 0 || angleChange !== 0) {
             // calculate the new angle
             let tempNewAngle = this.angle + angleChange;
 
@@ -127,17 +129,10 @@ module.exports = class CurrentPlayer {
                 this.y,
                 this.angle
             )
-
-            // Send new location to server
-            this.emitInfo();
         }
-    }
 
-    /**
-     * Tell the server we want to fire
-     */
-    fire = () => {
-        this.socket.emit('fire');
+        // Send new location to server
+        this.emitInfo();
     }
 
     /**
@@ -149,6 +144,7 @@ module.exports = class CurrentPlayer {
             y: this.y,
             angle: this.angle,
             color: this.player.properties.color,
+            actions: this.actions
         });
     }
 

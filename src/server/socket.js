@@ -44,13 +44,12 @@ module.exports = (httpServer) => {
             let tempBullet = bullets[key];
 
             // Check if the bullet is still within viewport range
-            if (tempBullet.x > viewportWidth || tempBullet.x < 0 ||
-                tempBullet.y > viewportHeight || tempBullet.y < 0) {
+            if (tempBullet.x > viewportWidth + 50 || tempBullet.x < -50 ||
+                tempBullet.y > viewportHeight + 50 || tempBullet.y < -50) {
                 // rekt the bullet
                 delete bullets[key];
             } else {
                 // Calculate the new position
-                console.log(tempBullet);
                 var newPoint = findNewPoint(tempBullet.x, tempBullet.y, tempBullet.angle, BulletSpeed);
 
                 // update values
@@ -58,6 +57,41 @@ module.exports = (httpServer) => {
                 bullets[key].y = newPoint.y;
             }
         });
+    }
+
+    // Receive new player info from client
+    var fire = (socketId) => {
+        let playerIndexInfo = playerIndex[socketId];
+        let randId = playerIndexInfo.randId;
+        let playerInfo = players[randId];
+
+        // Check if we're firing
+        if (!playerInfo.actions.fire) {
+            return;
+        }
+
+        // check if we're allowed to fire
+        if (playerIndexInfo.allowFire !== true) {
+            // Calculate time difference
+            let timeDiff = new Date().getTime() - playerIndexInfo.allowFire;
+            // Allow every x seconds, else return and dont do anything
+            if (timeDiff < 250) {
+                return
+            }
+        }
+
+        // Check if player still exists
+        if (playerInfo) {
+            // add new bullet
+            bullets[uuid()] = {
+                x: playerInfo.x,
+                y: playerInfo.y,
+                angle: playerInfo.angle,
+            }
+
+            // set the player timeout value
+            playerIndexInfo.allowFire = new Date().getTime();
+        }
     }
 
     io.on('connection', (socket) => {
@@ -96,7 +130,7 @@ module.exports = (httpServer) => {
             height: viewportHeight
         })
 
-        // Send initial player list
+        // Send the player list to everyone
         SendPlayers();
 
         // Receive new player info from client
@@ -108,31 +142,9 @@ module.exports = (httpServer) => {
                 // Create new player
                 players[randId] = playerInfo;
             }
-        });
 
-        // Receive new player info from client
-        socket.on('fire', () => {
-            if (playerIndex[socketId].allowFire !== true) {
-                // Calculate time difference
-                let timeDiff = new Date().getTime() - playerIndex[socketId].allowFire;
-                // Allow every x seconds, else return and dont do anything
-                if (timeDiff < 250) {
-                    return
-                }
-            }
-
-            // Check if player still exists
-            if (players[randId]) {
-                // add new bullet
-                bullets[uuid()] = {
-                    x: players[randId].x,
-                    y: players[randId].y,
-                    angle: players[randId].angle,
-                }
-
-                // set the player timeout value
-                playerIndex[socketId].allowFire = new Date().getTime();
-            }
+            // Check if we need to fire
+            fire(socketId);
         });
 
         // Client disconnected

@@ -70,29 +70,31 @@ module.exports = class Game {
     handleKeyDown = (e) => {
         e = e || window.event;
 
+        global = 0;
+
         switch (e.keyCode) {
             case 38:
             case 87:
-                this.currentPlayer.startMove('up');
+                this.currentPlayer.startAction('up');
                 break;
             case 40:
             case 83:
-                this.currentPlayer.startMove('down');
+                this.currentPlayer.startAction('down');
                 break;
             case 37:
             case 65:
-                this.currentPlayer.startMove('left');
+                this.currentPlayer.startAction('left');
                 break;
             case 39:
             case 68:
-                this.currentPlayer.startMove('right');
+                this.currentPlayer.startAction('right');
                 break;
             case 16:
-                this.currentPlayer.startMove('sprint');
+                this.currentPlayer.startAction('sprint');
                 break;
             case 32: // space
             case 74: // j
-                this.currentPlayer.fire();
+                this.currentPlayer.startAction('fire');
                 break;
         }
     }
@@ -102,26 +104,26 @@ module.exports = class Game {
         switch (e.keyCode) {
             case 38:
             case 87:
-                this.currentPlayer.stopMove('up');
+                this.currentPlayer.stopAction('up');
                 break;
             case 40:
             case 83:
-                this.currentPlayer.stopMove('down');
+                this.currentPlayer.stopAction('down');
                 break;
             case 37:
             case 65:
-                this.currentPlayer.stopMove('left');
+                this.currentPlayer.stopAction('left');
                 break;
             case 39:
             case 68:
-                this.currentPlayer.stopMove('right');
+                this.currentPlayer.stopAction('right');
                 break;
             case 16:
-                this.currentPlayer.stopMove('sprint');
+                this.currentPlayer.stopAction('sprint');
                 break;
             case 32: // space
             case 74: // j
-                this.currentPlayer.fire();
+                this.currentPlayer.stopAction('fire');
                 break;
         }
     }
@@ -165,10 +167,12 @@ module.exports = class Game {
             let tempBullet = this.bullets[key];
 
             // Check if still visible, else dont render it
-            if (tempBullet.x > this.viewport.width || tempBullet.x < 0 ||
-                tempBullet.y > this.viewport.height || tempBullet.y < 0) {
+            if (tempBullet.x > this.viewport.width || tempBullet.x < -20 ||
+                tempBullet.y > this.viewport.height || tempBullet.y < -20) {
                 // this bullet isn't in the viewport, dont render it
-                this.bullets[key].object.remove();
+                if(this.bullets[key].object){
+                    this.bullets[key].object.remove();
+                }
                 delete this.bullets[key];
                 return;
             }
