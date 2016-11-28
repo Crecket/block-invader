@@ -9,7 +9,7 @@ var app = express();
 var httpServer = http.Server(app);
 
 // Socket io handlers
-var io = require('./src/server/socket')(httpServer);
+var BlockInvaderApp = require('./src/server/App')(httpServer);
 
 // publc files
 app.use(express.static('public'))
