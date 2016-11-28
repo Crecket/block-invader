@@ -21,6 +21,9 @@ module.exports = class BlockInvader {
         this.PlayerMoveSpeed = 3;
         this.PlayerTurnSpeed = 2.8;
 
+        // Scale increase when the player gets a kill
+        this.PlayerScaleIncrease = 0.05;
+
         // Listen for connection event
         this.io.on('connection', (socket) => {
             this._SocketConnect(socket);
@@ -57,6 +60,7 @@ module.exports = class BlockInvader {
 
     }
 
+    // The main connect event
     _SocketConnect(socket) {
         var socketId = socket.id;
         var randId = uuid();
@@ -78,26 +82,7 @@ module.exports = class BlockInvader {
             allowFire: true
         }
         // Set the intitial player info
-        players[randId] = {
-            // Random spawn points
-            x: Helpers.randomInt(0 + this.PlayerWidth, this.ViewportWidth + this.PlayerWidth),
-            y: Helpers.randomInt(0 + this.PlayerWidth, this.ViewportHeight + this.PlayerWidth),
-            // Random angle
-            angle: Helpers.randomInt(0, 360),
-            // Random color
-            color: '#' + '0123456789abcdef'.split('').map(function (v, i, a) {
-                return i > 5 ? null : a[Math.floor(Math.random() * 16)]
-            }).join(''),
-            // Default action values
-            actions: {
-                up: false,
-                down: false,
-                left: false,
-                right: false,
-                sprint: false,
-                fire: false
-            }
-        }
+        players[randId] = this.defaultPlayerValues();
 
         // Tells the client its new id
         socket.emit('update id', randId);
@@ -116,9 +101,6 @@ module.exports = class BlockInvader {
             if (players[randId]) {
                 // Player exists, just update new values
                 players[randId].actions = playerInfo.actions;
-
-                // No longer use this to prevent client from changing x/y and other settings
-                // Object.assign(players[randId], playerInfo);
             } else {
                 // Create new player
                 players[randId] = playerInfo;
@@ -144,24 +126,11 @@ module.exports = class BlockInvader {
         // Check for fire events for all players
         this.firePlayers();
 
-        // Iterate through all bullets
-        Object.keys(bullets).map((key) => {
-            let tempBullet = bullets[key];
+        // Check the bullets
+        this.moveBullets();
 
-            // Check if the bullet is still within viewport range
-            if (tempBullet.x > this.ViewportWidth + 50 || tempBullet.x < -50 ||
-                tempBullet.y > this.ViewportHeight + 50 || tempBullet.y < -50) {
-                // rekt the bullet
-                delete bullets[key];
-            } else {
-                // Calculate the new position
-                var newPoint = Helpers.findNewPoint(tempBullet.x, tempBullet.y, tempBullet.angle, this.BulletSpeed);
-
-                // update values
-                bullets[key].x = newPoint.x;
-                bullets[key].y = newPoint.y;
-            }
-        });
+        // Check if any players got hit by other player's bullets
+        this.checkPlayerHits();
     }
 
     // Check all players if they want/can fire
@@ -198,6 +167,7 @@ module.exports = class BlockInvader {
                     x: playerInfo.x,
                     y: playerInfo.y,
                     angle: playerInfo.angle,
+                    player: randId
                 }
 
                 // set the player timeout value
@@ -216,6 +186,10 @@ module.exports = class BlockInvader {
             if (!playerInfo || !playerInfo.actions) {
                 return;
             }
+
+            // Update the player size based on scale
+            players[playerIndexInfo.randId].width = players[playerIndexInfo.randId].scale * this.PlayerWidth;
+            players[playerIndexInfo.randId].height = players[playerIndexInfo.randId].scale * this.PlayerHeight;
 
             let tempMoveSpeed = this.PlayerMoveSpeed;
             let tempTurnSpeed = this.PlayerTurnSpeed;
@@ -244,7 +218,6 @@ module.exports = class BlockInvader {
 
             // calculate the new angle and set it
             players[playerIndexInfo.randId].angle = playerInfo.angle + angleChange;
-            ;
 
             // Check if we require to update player position
             if (yChange !== 0) {
@@ -269,21 +242,102 @@ module.exports = class BlockInvader {
                 if (tempNewX < 0) {
                     tempNewX = 0;
                 }
-                if (tempNewX > this.ViewportWidth - this.PlayerWidth) {
-                    tempNewX = this.ViewportWidth - this.PlayerWidth;
+                if (tempNewX > this.ViewportWidth - players[playerIndexInfo.randId].width) {
+                    tempNewX = this.ViewportWidth - players[playerIndexInfo.randId].width;
                 }
                 if (tempNewY < 0) {
                     tempNewY = 0;
                 }
-                if (tempNewY > this.ViewportHeight - this.PlayerHeight) {
-                    tempNewY = this.ViewportHeight - this.PlayerHeight;
+                if (tempNewY > this.ViewportHeight - players[playerIndexInfo.randId].height) {
+                    tempNewY = this.ViewportHeight - players[playerIndexInfo.randId].height;
                 }
 
                 // Update values
                 players[playerIndexInfo.randId].x = tempNewX;
                 players[playerIndexInfo.randId].y = tempNewY;
             }
+
         })
+    }
+
+    // Reset values for a single player
+    resetPlayerValues(key) {
+        // Get defautl values
+        let newValues = this.defaultPlayerValues();
+
+        // get rid of values we dont want to reset
+        delete newValues.color;
+
+        // Set new values
+        players[key] = newValues;
+    }
+
+    // Set player values back to default
+    defaultPlayerValues() {
+        return {
+            // Random spawn points
+            x: Helpers.randomInt(0 + this.PlayerWidth, this.ViewportWidth - this.PlayerWidth),
+            y: Helpers.randomInt(0 + this.PlayerHeight, this.ViewportHeight - this.PlayerHeight),
+            // Random angle
+            angle: Helpers.randomInt(0, 360),
+            // Random color
+            color: '#' + '0123456789abcdef'.split('').map(function (v, i, a) {
+                return i > 5 ? null : a[Math.floor(Math.random() * 16)]
+            }).join(''),
+            // Default action values
+            actions: {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+                sprint: false,
+                fire: false
+            },
+            // Player size
+            scale: 1,
+            width: this.PlayerWidth,
+            height: this.PlayerHeight,
+        }
+    }
+
+    // Check all bullets and animate/remove them
+    moveBullets() {
+
+        // Iterate through all bullets
+        Object.keys(bullets).map((key) => {
+            let tempBullet = bullets[key];
+
+            // Check if the bullet is still within viewport range
+            if (tempBullet.x > this.ViewportWidth + 50 || tempBullet.x < -50 ||
+                tempBullet.y > this.ViewportHeight + 50 || tempBullet.y < -50) {
+                // rekt the bullet
+                delete bullets[key];
+            } else {
+                // Calculate the new position
+                var newPoint = Helpers.findNewPoint(tempBullet.x, tempBullet.y, tempBullet.angle, this.BulletSpeed);
+
+                // update values
+                bullets[key].x = newPoint.x;
+                bullets[key].y = newPoint.y;
+            }
+        });
+    }
+
+    // Check collisions
+    checkPlayerHits() {
+
+        // Iterate through all bullets
+        Object.keys(bullets).map((key) => {
+            let tempBullet = bullets[key];
+
+            // Check if the bullet is still within viewport range
+            if (tempBullet.x > this.ViewportWidth + 50 || tempBullet.x < -50 ||
+                tempBullet.y > this.ViewportHeight + 50 || tempBullet.y < -50) {
+
+            } else {
+
+            }
+        });
     }
 
     // Send info to the clients

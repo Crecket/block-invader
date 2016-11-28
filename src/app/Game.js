@@ -160,17 +160,15 @@ module.exports = class Game {
                     tempPlayer.angle, this.canvas
                 );
             } else {
-                // update the new coordinates
-                tempPlayer.object.setPosition(
-                    viewportOffsetWidth + tempPlayer.x - this.currentPlayer.x,
-                    viewportOffsetHeight + tempPlayer.y - this.currentPlayer.y,
-                    tempPlayer.angle
-                );
-            }
-
-            // Check if we need to update the color
-            if (tempPlayer.object.properties.color !== tempPlayer.color) {
-                tempPlayer.object.setPropertyValue('color', tempPlayer.color);
+                // update the new coordinates and size
+                tempPlayer.object.setValues({
+                    x: viewportOffsetWidth + tempPlayer.x - this.currentPlayer.x,
+                    y: viewportOffsetHeight + tempPlayer.y - this.currentPlayer.y,
+                    angle: tempPlayer.angle,
+                    width: tempPlayer.width,
+                    height: tempPlayer.height,
+                    color: tempPlayer.color
+                });
             }
         });
 
@@ -248,11 +246,14 @@ module.exports = class Game {
             // remove this client from the list by client_id
             if (key === this.client_id) {
                 // Update our player values
-                this.currentPlayer.x = newPlayers[key].x;
-                this.currentPlayer.y = newPlayers[key].y;
-                this.currentPlayer.angle = newPlayers[key].angle;
-                this.currentPlayer.player.setPropertyValue('color', newPlayers[key].color);
-
+                this.currentPlayer.setValues({
+                    x: newPlayers[key].x,
+                    y: newPlayers[key].y,
+                    width: newPlayers[key].width,
+                    height: newPlayers[key].height,
+                    angle: newPlayers[key].angle,
+                    color: newPlayers[key].color,
+                })
                 // Update the view
                 this.currentPlayer.update();
 
@@ -264,14 +265,19 @@ module.exports = class Game {
                     this.players[key] = {
                         x: newPlayers[key].x,
                         y: newPlayers[key].y,
+                        width: newPlayers[key].width,
+                        height: newPlayers[key].height,
                         angle: newPlayers[key].angle,
                         color: newPlayers[key].color,
                         object: false
                     }
                 } else {
+                    // Object.assign(this.players[key], newPlayers[key]);
                     // Update existing player
                     this.players[key].x = newPlayers[key].x;
                     this.players[key].y = newPlayers[key].y;
+                    this.players[key].width = newPlayers[key].width;
+                    this.players[key].height = newPlayers[key].height;
                     this.players[key].angle = newPlayers[key].angle;
                     this.players[key].color = newPlayers[key].color;
                 }

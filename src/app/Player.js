@@ -1,22 +1,18 @@
-const playerWidth = 24;
-const playerHeight = 32;
-
 module.exports = class Player {
     constructor(startX, startY, startAngle, canvas) {
+        this.canvas = canvas;
+
         // Store parameters
         this.x = startX;
         this.y = startY;
         this.angle = startAngle;
-        this.canvas = canvas;
 
-        // store the width and height
-        this.width = playerWidth;
-        this.height = playerHeight;
+        // store the default width and height
+        this.width = 24;
+        this.height = 32;
 
         // Extra propertiees
-        this.properties = {
-            color: '#222',
-        };
+        this.color = '#666';
 
         // Generate the player object
         this.generatePlayer()
@@ -26,14 +22,23 @@ module.exports = class Player {
      * Update any changed values for this player object on the canvas
      */
     update = () => {
+        // Since this is a path we have to completely redo the player if width/height changes
+        if (this.width !== this.player.width || this.height !== this.player.height) {
+            // Remove first
+            this.player.remove();
+
+            // Redraw player
+            this.generatePlayer();
+            return;
+        }
         // Update the canvas object
         this.player.set({
-            'left': this.x,
-            'top': this.y,
-            'width': this.width,
-            'height': this.height,
-            'angle': this.angle,
-            'fill': this.properties.color
+            left: this.x,
+            top: this.y,
+            width: this.width,
+            height: this.height,
+            angle: this.angle,
+            fill: this.color
         });
 
         // Update the canvas
@@ -43,7 +48,6 @@ module.exports = class Player {
 
     /**
      * Sets the player position and angle to a new value
-     *
      * @param x
      * @param y
      * @param angle
@@ -56,12 +60,12 @@ module.exports = class Player {
     }
 
     /**
-     * Sets a property value
-     * @param key
-     * @param value
+     * Generic function to update values
+     * @param width
+     * @param height
      */
-    setPropertyValue = (key, value) => {
-        this.properties[key] = value;
+    setValues = (values) => {
+        Object.assign(this, values);
         this.update();
     }
 
@@ -76,13 +80,13 @@ module.exports = class Player {
      * Generate the initial player object on the canvas
      */
     generatePlayer = () => {
-        this.player = new fabric.Path('M ' + (playerWidth / 2) + ' 0 ' + 'L ' + playerWidth + ' ' + playerHeight + ' ' + 'L ' + playerWidth / 2 + ' ' + (playerHeight * 0.8) + ' ' + 'L 0 ' + playerHeight + ' z');
+        this.player = new fabric.Path(this.getPathString());
         this.player.set({
             left: this.x,
             top: this.y,
             width: this.width,
             height: this.height,
-            fill: this.properties.color,
+            fill: this.color,
 
             originX: 'center',
             originY: 'center',
@@ -96,4 +100,13 @@ module.exports = class Player {
         });
         this.canvas.add(this.player);
     }
+
+    /**
+     * Generate the string to be used in the player path
+     * @returns {string}
+     */
+    getPathString = () => {
+        return 'M ' + (this.width / 2) + ' 0 ' + 'L ' + this.width + ' ' + this.height + ' ' + 'L ' + (this.width / 2) + ' ' + (this.height * 0.8) + ' ' + 'L 0 ' + this.height + ' z';
+    }
+
 }
