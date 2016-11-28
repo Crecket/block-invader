@@ -16,7 +16,6 @@
     "extract-text-webpack-plugin": "^1.0.1",
     "fabric": "^1.7.0",
     "html-webpack-plugin": "^2.7.2",
-    "jquery": "^3.1.1",
     "script-loader": "^0.7.0",
     "socket.io": "^1.6.0",
     "style-loader": "^0.13.1",

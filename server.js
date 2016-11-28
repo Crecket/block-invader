@@ -18,9 +18,6 @@ app.use(express.static('public'))
 app.get('/fabric.js', (req, res) => {
     res.sendFile(__dirname + '/node_modules/fabric/dist/fabric.js');
 });
-app.get('/jquery.js', (req, res) => {
-    res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.js');
-});
 app.get('/socket.io.js', (req, res) => {
     res.sendFile(__dirname + '/node_modules/socket.io-client/socket.io.js');
 });
