@@ -24,9 +24,7 @@
   },
   "scripts": {
     "start": "cross-env NODE_ENV=production node server.js",
-    "webpack-release": "cross-env NODE_ENV=production webpack -p --progress --colors",
-
-    "dev": "start npm run start-dev && start npm run webpack-dev",
+    "webpack": "cross-env NODE_ENV=production webpack -p --progress --colors",
     "start-dev": "cross-env NODE_ENV=development nodemon server.js",
     "webpack-dev": "cross-env NODE_ENV=development webpack -d --watch --progress --colors"
   }

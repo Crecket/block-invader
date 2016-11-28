@@ -115,7 +115,10 @@ module.exports = class BlockInvader {
         socket.on('update player', (playerInfo) => {
             if (players[randId]) {
                 // Player exists, just update new values
-                Object.assign(players[randId], playerInfo);
+                players[randId].actions = playerInfo.actions;
+
+                // No longer use this to prevent client from changing x/y and other settings
+                // Object.assign(players[randId], playerInfo);
             } else {
                 // Create new player
                 players[randId] = playerInfo;

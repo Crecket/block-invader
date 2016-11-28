@@ -6,12 +6,12 @@
 
 ## Installation
 1. `$ npm install` to install the required libraries
-2. `$ npm start` to start the server
-3. ``
+2. `$ npm run webpack` to create a production release
+3. `$ npm start` to start the http/socket server
 
 ## Development
 1. Fork or clone the project
 2. `$ npm install` to install the required libraries
-3. Now start the webpack and http server:
-- On windows simply `$ npm run dev` to start both the server and webpack automatically 
-- Alternatively run both `$ npm run start-dev` and `$ npm run webpack-dev` 
+3. Now start the webpack and http server
+    - `$ npm run start-dev` 
+    - `$ npm run webpack-dev` 
