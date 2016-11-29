@@ -268,7 +268,7 @@ module.exports = class BlockInvader {
         delete newValues.color;
 
         // Set new values
-        players[key] = newValues;
+        Object.assign(players[key], newValues);
     }
 
     // Set player values back to default
@@ -331,11 +331,11 @@ module.exports = class BlockInvader {
             let tempBullet = bullets[bulletKey];
 
             // Iterate through all players
-            Object.keys(players).map((key) => {
-                let tempPlayer = players[key];
+            Object.keys(players).map((playerKey) => {
+                let tempPlayer = players[playerKey];
 
                 // Check if this isnt the player self
-                if (tempBullet.player !== key) {
+                if (tempBullet.player !== playerKey) {
                     // Calculate the 3 points of the player
                     let position1 = {
                         x: tempPlayer.x,
@@ -358,6 +358,9 @@ module.exports = class BlockInvader {
 
                         // send bullet event
                         this.io.emit('bullet hit', bulletKey);
+
+                        // respawn player
+                        this.resetPlayerValues(playerKey);
                     }
                 }
             });
