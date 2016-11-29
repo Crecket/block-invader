@@ -57,7 +57,6 @@ module.exports = class BlockInvader {
                 }
             });
         }, 2000)
-
     }
 
     // The main connect event
@@ -293,6 +292,8 @@ module.exports = class BlockInvader {
                 sprint: false,
                 fire: false
             },
+            // Player score
+            score: 0,
             // Player size
             scale: 1,
             width: this.PlayerWidth,
@@ -325,18 +326,41 @@ module.exports = class BlockInvader {
 
     // Check collisions
     checkPlayerHits() {
-
         // Iterate through all bullets
-        Object.keys(bullets).map((key) => {
-            let tempBullet = bullets[key];
+        Object.keys(bullets).map((bulletKey) => {
+            let tempBullet = bullets[bulletKey];
 
-            // Check if the bullet is still within viewport range
-            if (tempBullet.x > this.ViewportWidth + 50 || tempBullet.x < -50 ||
-                tempBullet.y > this.ViewportHeight + 50 || tempBullet.y < -50) {
+            // Iterate through all players
+            Object.keys(players).map((key) => {
+                let tempPlayer = players[key];
 
-            } else {
+                // Check if this isnt the player self
+                if (tempBullet.player !== key) {
+                    // Calculate the 3 points of the player
+                    let position1 = {
+                        x: tempPlayer.x,
+                        y: tempPlayer.y - tempPlayer.height / 2
+                    };
+                    let position2 = {
+                        x: tempPlayer.x + tempPlayer.width / 2,
+                        y: tempPlayer.y + tempPlayer.height / 2
+                    };
+                    let position3 = {
+                        x: tempPlayer.x - tempPlayer.width / 2,
+                        y: tempPlayer.y + tempPlayer.height / 2
+                    };
 
-            }
+                    // Check if the bullet is still within viewport range
+                    var playerHit = Helpers.triangleCollision(tempBullet, position1, position2, position3);
+                    if (playerHit) {
+                        // Remove the bullet
+                        delete bullets[bulletKey];
+
+                        // send bullet event
+                        this.io.emit('bullet hit', bulletKey);
+                    }
+                }
+            });
         });
     }
 

@@ -349,6 +349,24 @@ module.exports = class Game {
     }
 
     /**
+     * Remove a bullet by ID
+     * @param bulletId
+     * @private
+     */
+    _SocketBulletHit = (bulletId) => {
+        if (this.bullets[bulletId]) {
+            // Check if bullet has a active object
+            if (this.bullets[bulletId].object) {
+                // remove the object
+                this.bullets[bulletId].object.remove();
+            }
+
+            // Remove bullet all together
+            delete this.bullets[bulletId];
+        }
+    }
+
+    /**
      * Socket disconnect event
      * @private
      */
@@ -374,5 +392,6 @@ module.exports = class Game {
         this.socket.on('update players', this._SocketPlayers);
         this.socket.on('update bullets', this._SocketBullets);
         this.socket.on('player leave', this._SocketPlayerLeave);
+        this.socket.on('bullet hit', this._SocketBulletHit);
     }
 }
