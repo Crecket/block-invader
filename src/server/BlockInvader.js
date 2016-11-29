@@ -11,8 +11,8 @@ module.exports = class BlockInvader {
         this.io = io;
 
         // The virtual viewport size
-        this.ViewportWidth = 600;
-        this.ViewportHeight = 600;
+        this.ViewportWidth = 1920;
+        this.ViewportHeight = 1080;
 
         // Speed at which the bullets fly
         this.BulletSpeed = 9;
@@ -20,6 +20,7 @@ module.exports = class BlockInvader {
         this.PlayerHeight = 32;
         this.PlayerMoveSpeed = 3;
         this.PlayerTurnSpeed = 2.8;
+        this.PlayerFireDelay = 125;
 
         // Scale increase when the player gets a kill
         this.PlayerScaleIncrease = 0.05;
@@ -154,7 +155,7 @@ module.exports = class BlockInvader {
                 // Calculate time difference
                 let timeDiff = new Date().getTime() - playerIndexInfo.allowFire;
                 // Allow every x seconds, else return and dont do anything
-                if (timeDiff < 250) {
+                if (timeDiff < this.PlayerFireDelay) {
                     return
                 }
             }
