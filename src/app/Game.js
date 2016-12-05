@@ -28,12 +28,17 @@ module.exports = class Game {
         this.setSocketHandlers();
 
         // Create a new canvas element
-        this.canvas = new fabric.Canvas('canvas', {
+        this.canvas = new fabric.StaticCanvas('canvas', {
             width: width,
             height: height,
             selection: false,
             hoverCursor: 'default',
-            scale: this.scale
+            scale: this.scale,
+
+            // Performance settings
+            stateful: false,
+            skipTargetFind: false,
+            renderOnAddRemove: false
         });
 
         // Keystroke handler
